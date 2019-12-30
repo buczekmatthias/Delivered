@@ -1,0 +1,66 @@
+body {
+  background: linear-gradient(
+    30deg,
+    rgba(255, 118, 117, 1) 0%,
+    rgba(129, 236, 236, 1) 100%
+  );
+  background-size: cover;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+form li {
+  list-style-type: none;
+  color: red;
+}
+form {
+  background-color: #f1f1f194;
+  width: 50%;
+  height: 80%;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+form div {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  height: 25%;
+  width: 70%;
+}
+form label {
+  font-size: 2em;
+}
+form input {
+  height: 30%;
+  width: 100%;
+  border-radius: 8px;
+  padding: 0 8px;
+  font-size: 1.5em;
+  border: none;
+}
+form button {
+  width: 50%;
+  height: 8%;
+  font-size: 1.7em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: rgb(169, 233, 86);
+}
+form a {
+  text-decoration: none;
+  font-size: 1.7em;
+  margin-top: 1em;
+  color: rgb(21, 35, 80);
+}
+
+.registerForm {
+  height: 90%;
+  padding: 1.5em 0;
+}

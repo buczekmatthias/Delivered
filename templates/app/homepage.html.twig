@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	Delivered
+{% endblock %}
+
+{% block stylesheets %}
+	<link href="/styles/app.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+	<nav>
+		<p class="hello">
+			Hello,
+			{{app.session.get('user').Name}}
+			{{app.session.get('user').Surname}}
+		</p>
+
+		<a href="{{path('logout')}}">
+			Logout
+		</a>
+	</nav>
+
+	{% block content %}
+		<section class="org">
+			<div class="new">
+				<p class="title">
+					New opportunities
+				</p>
+				<div>
+					{% for new in possibilities %}
+						<a href="{{path('chat', {'id': new.id})}}" class="name">
+							{{new.Name}}
+							{{new.Surname}}
+						</a>
+					{% endfor %}
+				</div>
+			</div>
+			<div class="active">
+				<p class="title">
+					Started conversations
+				</p>
+				<div>
+					{% for conv in active %}
+						<a href="{{path('chat', {'id': conv.id})}}" class="name">
+							{{conv.Name}}
+							{{conv.Surname}}
+						</a>
+					{% endfor %}
+				</div>
+			</div>
+		</section>
+	{% endblock %}
+{% endblock %}

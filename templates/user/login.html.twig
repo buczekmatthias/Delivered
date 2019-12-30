@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	Login
+{% endblock %}
+
+{% block stylesheets %}
+	<link href="/styles/user.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+	{{form_start(login, {'attr': {'class': 'loginForm'}})}}
+	{{form_row(login.Login)}}
+	{{form_row(login.Password)}}
+	{{form_widget(login.Submit)}}
+	<a href="{{path('register')}}">
+		Create account
+	</a>
+	{{form_end(login)}}
+{% endblock %}
