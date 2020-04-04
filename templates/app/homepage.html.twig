@@ -10,7 +10,7 @@
 
 {% block body %}
 	<nav>
-		<p class="hello">
+		<p class="hello" data-id="{{app.session.get('user').id}}">
 			Hello,
 			{{app.session.get('user').Name}}
 			{{app.session.get('user').Surname}}
@@ -28,78 +28,120 @@
 					Your chats
 				</p>
 				<a href="{{path('chatCreate')}}">
-					<button>
-						Start new chat
-					</button>
+					Start new chat
 				</a>
 			</div>
-			{% for chat in chats %}
-				<a href="{{path('chat', {'hash': chat.chatHash})}}">
-					<p class="chat-name">
-						{% if chat.chatName is null %}
-							{% set name = '' %}
-							{% if chat.members|length > 2 %}
-								{% set temp = 0 %}
-								{% if chat.members|length > 4 %}
-									{% for user in chat.members|filter(v => v.id != app.session.get('user').id)|slice(0, 2) %}
-										{% set name = name ~ user.Name %}
-										{% if temp == 0 %}
-											{% set name = name ~ ', ' %}
-										{% endif %}
-										{% if temp == 1 %}
-											{% set name = name ~ ' and ' ~ (chat.members|length - 3) ~ ' others' %}
-										{% endif %}
-										{% set temp = temp + 1 %}
-									{% endfor %}
-								{% else %}
-									{% if chat.members|length == 3 %}
-										{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
-											{% set name = name ~ user.Name %}
-											{% if temp == 0 %}
-												{% set name = name ~ ' and ' %}
-											{% endif %}
-											{% set temp = temp + 1 %}
-										{% endfor %}
-									{% else %}
-										{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
+
+			<div class="chats-content">
+				{% for chat in chats %}
+					<a href="{{path('chat', {'hash': chat.chatHash})}}">
+						<p class="chat-name">
+							{% if chat.chatName is null %}
+								{% set name = '' %}
+								{% if chat.members|length > 2 %}
+									{% set temp = 0 %}
+									{% if chat.members|length > 4 %}
+										{% for user in chat.members|filter(v => v.id != app.session.get('user').id)|slice(0, 2) %}
 											{% set name = name ~ user.Name %}
 											{% if temp == 0 %}
 												{% set name = name ~ ', ' %}
 											{% endif %}
 											{% if temp == 1 %}
-												{% set name = name ~ ' and ' %}
+												{% set name = name ~ ' and ' ~ (chat.members|length - 3) ~ ' others' %}
 											{% endif %}
 											{% set temp = temp + 1 %}
 										{% endfor %}
+									{% else %}
+										{% if chat.members|length == 3 %}
+											{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
+												{% set name = name ~ user.Name %}
+												{% if temp == 0 %}
+													{% set name = name ~ ' and ' %}
+												{% endif %}
+												{% set temp = temp + 1 %}
+											{% endfor %}
+										{% else %}
+											{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
+												{% set name = name ~ user.Name %}
+												{% if temp == 0 %}
+													{% set name = name ~ ', ' %}
+												{% endif %}
+												{% if temp == 1 %}
+													{% set name = name ~ ' and ' %}
+												{% endif %}
+												{% set temp = temp + 1 %}
+											{% endfor %}
+										{% endif %}
+									{% endif %}
+								{% else %}
+									{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
+										{% set name = user.Name ~ ' ' ~ user.Surname %}
+									{% endfor %}
+								{% endif %}
+								{{name}}
+							{% else %}
+								{{chat.chatName}}
+							{% endif %}
+						</p>
+						<p class="last-message-time">
+							{% if chat.messages|length > 0 %}
+								{% set time = '' %}
+								{% set diff = date('now').diff(chat.messages|reverse|slice(0,1).0.Date) %}
+								{% if diff.s < 60 %}
+									{% set time = 'Just now' %}
+								{% endif %}
+								{% if diff.i > 0 %}
+									{% if diff.i == 1 %}
+										{% set time = '1 minute ago' %}
+									{% else %}
+										{% set time = diff.i ~ ' minutes ago' %}
 									{% endif %}
 								{% endif %}
-							{% else %}
-								{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
-									{% set name = user.Name ~ ' ' ~ user.Surname %}
-								{% endfor %}
+								{% if diff.h > 0 %}
+									{% if diff.h == 1 %}
+										{% set time = '1 hour ago' %}
+									{% else %}
+										{% set time = diff.h ~ ' hours ago' %}
+									{% endif %}
+								{% endif %}
+								{% if diff.d > 0 %}
+									{% if diff.d == 1 %}
+										{% set time = '1 day ago' %}
+									{% endif %}
+									{% if diff.d < 7 %}
+										{% set time = diff.d ~ ' days ago' %}
+									{% endif %}
+									{% if diff.d > 6%}
+										{% set time = diff.d is divisible by(7) ~ ' weeks ago' %}
+									{% endif %}
+								{% endif %}
+								{% if diff.m > 0 %}
+									{% if diff.m == 1 %}
+										{% set time = '1 month ago' %}
+									{% else %}
+										{% set time = diff.m ~ ' months ago' %}
+									{% endif %}
+								{% endif %}
+								{% if diff.y > 0 %}
+									{% if diff.y == 1 %}
+										{% set time = '1 year ago' %}
+									{% else %}
+										{% set time = diff.y ~ ' years ago' %}
+									{% endif %}
+								{% endif %}
+								{{time}}
 							{% endif %}
-							{{name}}
-						{% else %}
-							{{chat.chatName}}
-						{% endif %}
-					</p>
-					<p class="last-message">
-						{% if chat.messages|length > 0 %}
-							{{chat.messages|reverse|slice(0).Content}}
-						{% else %}
-							Chat is so quiet. Tap to begin the talk...
-						{% endif %}
-					</p>
-					<p class="last-message-time">
-						{% if chat.messages|length > 0 %}
-							{% set diff = date('now').diff(chat.messages|reverse|slice(0).Date) %}
-							<pre>
-						{{ dump(diff) }}
-					</pre>
-						{% endif %}
-					</p>
-				</a>
-			{% endfor %}
+						</p>
+						<p class="last-message">
+							{% if chat.messages|length > 0 %}
+								{{chat.messages|reverse|slice(0,1).0.Content}}
+							{% else %}
+								Chat is so quiet. Tap to begin the talk...
+							{% endif %}
+						</p>
+					</a>
+				{% endfor %}
+			</div>
 		</section>
 	{% endblock %}
 {% endblock %}

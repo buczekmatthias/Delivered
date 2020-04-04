@@ -4,17 +4,44 @@
 
 {% block content %}
 	<section class="chat">
-		<div class="top">
+		<div class="side">
 			<a href="{{path('homepage')}}">
-				&lsaquo; Homepage
+				Back to homepage
 			</a>
+			<div class="messenger-chat-name">
+				{% if name is not null %}
+					<p class="chat-name">
+						{{name}}
+					</p>
+					<span id="set">
+						Edit
+					</span>
+				{% else %}
+					<p class="edit">
+						This chat got no name.
+						<span id="set">
+							Edit
+						</span>
+					</p>
+				{% endif %}
+				<div class="chat-name-change"></div>
+			</div>
+			<div class="messenger-chat-members">
+				{% for member in members %}
+					<p class="member">
+						{{member.name}}
+					</p>
+				{% endfor %}
+			</div>
 		</div>
-		<div class="messages"></div>
-		<div class="new-msg">
-			<textarea class="message-box" id="messageContent"></textarea>
-			<button class="send-message" id="messageSend" data-id="">
-				Send
-			</button>
+		<div class="messenger">
+			<div class="messages"></div>
+			<div class="new-msg">
+				<textarea class="message-box" id="messageContent"></textarea>
+				<button class="send-message" id="messageSend" data-id="{{hash}}">
+					Send
+				</button>
+			</div>
 		</div>
 	</section>
 {% endblock %}

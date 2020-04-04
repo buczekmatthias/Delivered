@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncode;
 
 class AppController extends AbstractController
 {
@@ -115,7 +116,40 @@ class AppController extends AbstractController
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
-        return $this->render('app/chat.html.twig', []);
+        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
+        $members = [];
+        foreach ($chat->getMembers() as $member) {
+            if ($member->getId() !== $this->session->get('user')->getId())
+                $members[] = [
+                    'name' => $member->getName() . " " . $member->getSurname()
+                ];
+        }
+        return $this->render('app/chat.html.twig', [
+            'hash' => $hash,
+            'name' => $chat->getChatName(),
+            'members' => $members
+        ]);
+    }
+    /**
+     * @Route("/chat/{hash}/json", name="chatJSON", methods={"GET"})
+     */
+    public function chatJSON(int $hash)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $temp = $this->cR->findOneBy(['chatHash' => $hash]);
+        $output = [];
+        foreach ($temp->getMessages() as $message) {
+            $output[] = [
+                'content' => $message->getContent(),
+                'date' => $message->getDate()->format('H:i:s d.m.Y'),
+                'author' => $message->getSender()->getName(),
+                'authorId' => $message->getSender()->getId()
+            ];
+        }
+        unset($temp);
+
+        return $this->json([json_encode($output)]);
     }
 
     /**
@@ -134,6 +168,21 @@ class AppController extends AbstractController
         $message->setChat($this->cR->findOneBy(['chatHash' => $hash]));
 
         $this->em->persist($message);
+        $this->em->flush();
+
+        return new Response();
+    }
+
+    /**
+     * @Route("/chat/{hash}/name-set", name="setChatName", methods={"POST"})
+     */
+    public function setChatName(int $hash, Request $request)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $name = $request->get('name');
+        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
+        $chat->setChatName($name);
         $this->em->flush();
 
         return new Response();
