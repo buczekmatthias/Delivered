@@ -50,11 +50,13 @@ class AppController extends AbstractController
         if ($newChat->isSubmitted() && $newChat->isValid()) {
             $data = $newChat->getData();
 
+            //Checks if already exists chat containing same users as those from form
             $verify = $this->checkIfChatExists($data['members']);
             if ($verify !== false) return $this->redirectToRoute('chat', ['hash' => $verify]);
             unset($verify);
 
             $chat = new Chats();
+            //Generates chat hash used as url parameter
             $hash = $this->generateChatHash();
             if ($this->cR->findOneBy(['chatHash' => $hash])) {
                 $i = false;
@@ -91,12 +93,14 @@ class AppController extends AbstractController
     }
     private function checkIfChatExists($members, $temp = [])
     {
+        //Get users from form and sort them
         foreach ($members as $m) {
             $temp[] = $m->getId();
         }
         $members = $temp;
         sort($members);
 
+        //Get all chats and check if in any of them there is same set of users
         $chats = $this->uR->findOneBy(['id' => $this->session->get('user')->getId()])->getChats();
         foreach ($chats as $chat) {
             $temp = array();
@@ -116,6 +120,7 @@ class AppController extends AbstractController
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
+        //Get some basic info about chat channel like name or members
         $chat = $this->cR->findOneBy(['chatHash' => $hash]);
         $members = [];
         foreach ($chat->getMembers() as $member) {
@@ -137,6 +142,7 @@ class AppController extends AbstractController
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
+        //Create internal API for getting messages
         $temp = $this->cR->findOneBy(['chatHash' => $hash]);
         $output = [];
         foreach ($temp->getMessages() as $message) {

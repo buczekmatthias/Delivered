@@ -24,6 +24,7 @@ class ChatType extends AbstractType
             ->add('members', EntityType::class, [
                 'class' => User::class,
                 'query_builder' => function (EntityRepository $eR) {
+                    //Specifies that in form will not be currently logged user
                     return $eR->createQueryBuilder('u')
                         ->andWhere("u.id != :userId")
                         ->setParameter('userId', $this->id);
