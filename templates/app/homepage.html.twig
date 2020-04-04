@@ -22,33 +22,84 @@
 	</nav>
 
 	{% block content %}
-		<section class="org">
-			<div class="new">
-				<p class="title">
-					New opportunities
+		<section class="chats">
+			<div class="chats-header">
+				<p class="chats-header-title">
+					Your chats
 				</p>
-				<div>
-					{% for new in possibilities %}
-						<a href="{{path('chat', {'id': new.id})}}" class="name">
-							{{new.Name}}
-							{{new.Surname}}
-						</a>
-					{% endfor %}
-				</div>
+				<a href="{{path('chatCreate')}}">
+					<button>
+						Start new chat
+					</button>
+				</a>
 			</div>
-			<div class="active">
-				<p class="title">
-					Started conversations
-				</p>
-				<div>
-					{% for conv in active %}
-						<a href="{{path('chat', {'id': conv.id})}}" class="name">
-							{{conv.Name}}
-							{{conv.Surname}}
-						</a>
-					{% endfor %}
-				</div>
-			</div>
+			{% for chat in chats %}
+				<a href="{{path('chat', {'hash': chat.chatHash})}}">
+					<p class="chat-name">
+						{% if chat.chatName is null %}
+							{% set name = '' %}
+							{% if chat.members|length > 2 %}
+								{% set temp = 0 %}
+								{% if chat.members|length > 4 %}
+									{% for user in chat.members|filter(v => v.id != app.session.get('user').id)|slice(0, 2) %}
+										{% set name = name ~ user.Name %}
+										{% if temp == 0 %}
+											{% set name = name ~ ', ' %}
+										{% endif %}
+										{% if temp == 1 %}
+											{% set name = name ~ ' and ' ~ (chat.members|length - 3) ~ ' others' %}
+										{% endif %}
+										{% set temp = temp + 1 %}
+									{% endfor %}
+								{% else %}
+									{% if chat.members|length == 3 %}
+										{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
+											{% set name = name ~ user.Name %}
+											{% if temp == 0 %}
+												{% set name = name ~ ' and ' %}
+											{% endif %}
+											{% set temp = temp + 1 %}
+										{% endfor %}
+									{% else %}
+										{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
+											{% set name = name ~ user.Name %}
+											{% if temp == 0 %}
+												{% set name = name ~ ', ' %}
+											{% endif %}
+											{% if temp == 1 %}
+												{% set name = name ~ ' and ' %}
+											{% endif %}
+											{% set temp = temp + 1 %}
+										{% endfor %}
+									{% endif %}
+								{% endif %}
+							{% else %}
+								{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
+									{% set name = user.Name ~ ' ' ~ user.Surname %}
+								{% endfor %}
+							{% endif %}
+							{{name}}
+						{% else %}
+							{{chat.chatName}}
+						{% endif %}
+					</p>
+					<p class="last-message">
+						{% if chat.messages|length > 0 %}
+							{{chat.messages|reverse|slice(0).Content}}
+						{% else %}
+							Chat is so quiet. Tap to begin the talk...
+						{% endif %}
+					</p>
+					<p class="last-message-time">
+						{% if chat.messages|length > 0 %}
+							{% set diff = date('now').diff(chat.messages|reverse|slice(0).Date) %}
+							<pre>
+						{{ dump(diff) }}
+					</pre>
+						{% endif %}
+					</p>
+				</a>
+			{% endfor %}
 		</section>
 	{% endblock %}
 {% endblock %}

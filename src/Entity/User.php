@@ -44,19 +44,19 @@ class User
     private $Surname;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Messages", mappedBy="Source")
+     * @ORM\OneToMany(targetEntity="App\Entity\Messages", mappedBy="sender")
      */
-    private $writtenMessages;
+    private $messages;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Messages", mappedBy="Target")
+     * @ORM\ManyToMany(targetEntity="App\Entity\Chats", mappedBy="members")
      */
-    private $receivedMessages;
+    private $chats;
 
     public function __construct()
     {
-        $this->writtenMessages = new ArrayCollection();
-        $this->receivedMessages = new ArrayCollection();
+        $this->messages = new ArrayCollection();
+        $this->chats = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -127,28 +127,28 @@ class User
     /**
      * @return Collection|Messages[]
      */
-    public function getWrittenMessages(): Collection
+    public function getMessages(): Collection
     {
-        return $this->writtenMessages;
+        return $this->messages;
     }
 
-    public function addWrittenMessage(Messages $writtenMessage): self
+    public function addMessage(Messages $message): self
     {
-        if (!$this->writtenMessages->contains($writtenMessage)) {
-            $this->writtenMessages[] = $writtenMessage;
-            $writtenMessage->setSource($this);
+        if (!$this->messages->contains($message)) {
+            $this->messages[] = $message;
+            $message->setSender($this);
         }
 
         return $this;
     }
 
-    public function removeWrittenMessage(Messages $writtenMessage): self
+    public function removeMessage(Messages $message): self
     {
-        if ($this->writtenMessages->contains($writtenMessage)) {
-            $this->writtenMessages->removeElement($writtenMessage);
+        if ($this->messages->contains($message)) {
+            $this->messages->removeElement($message);
             // set the owning side to null (unless already changed)
-            if ($writtenMessage->getSource() === $this) {
-                $writtenMessage->setSource(null);
+            if ($message->getSender() === $this) {
+                $message->setSender(null);
             }
         }
 
@@ -156,31 +156,28 @@ class User
     }
 
     /**
-     * @return Collection|Messages[]
+     * @return Collection|Chats[]
      */
-    public function getReceivedMessages(): Collection
+    public function getChats(): Collection
     {
-        return $this->receivedMessages;
+        return $this->chats;
     }
 
-    public function addReceivedMessage(Messages $receivedMessage): self
+    public function addChat(Chats $chat): self
     {
-        if (!$this->receivedMessages->contains($receivedMessage)) {
-            $this->receivedMessages[] = $receivedMessage;
-            $receivedMessage->setTarget($this);
+        if (!$this->chats->contains($chat)) {
+            $this->chats[] = $chat;
+            $chat->addMember($this);
         }
 
         return $this;
     }
 
-    public function removeReceivedMessage(Messages $receivedMessage): self
+    public function removeChat(Chats $chat): self
     {
-        if ($this->receivedMessages->contains($receivedMessage)) {
-            $this->receivedMessages->removeElement($receivedMessage);
-            // set the owning side to null (unless already changed)
-            if ($receivedMessage->getTarget() === $this) {
-                $receivedMessage->setTarget(null);
-            }
+        if ($this->chats->contains($chat)) {
+            $this->chats->removeElement($chat);
+            $chat->removeMember($this);
         }
 
         return $this;

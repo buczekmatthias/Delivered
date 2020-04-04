@@ -12,7 +12,6 @@ use App\Form\RegisterType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Faker\Factory;
 
 class UserController extends AbstractController
 {
@@ -99,8 +98,7 @@ class UserController extends AbstractController
     {
         if ($this->verify) {
             $this->session->clear();
-
-            return $this->redirectToRoute('login', []);
         }
+        return $this->redirectToRoute('login', []);
     }
 }

@@ -17,20 +17,6 @@ class Messages
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="writtenMessages")
-     * @ORM\JoinColumn(nullable=false)
-     * @ORM\JoinTable(name="user_send")
-     */
-    private $Source;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="receivedMessages")
-     * @ORM\JoinColumn(nullable=false)
-     * @ORM\JoinTable(name="user_receive")
-     */
-    private $Target;
-
-    /**
      * @ORM\Column(type="text")
      */
     private $Content;
@@ -40,33 +26,21 @@ class Messages
      */
     private $Date;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="messages")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $sender;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Chats", inversedBy="messages")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $chat;
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getSource(): ?User
-    {
-        return $this->Source;
-    }
-
-    public function setSource(?User $Source): self
-    {
-        $this->Source = $Source;
-
-        return $this;
-    }
-
-    public function getTarget(): ?User
-    {
-        return $this->Target;
-    }
-
-    public function setTarget(?User $Target): self
-    {
-        $this->Target = $Target;
-
-        return $this;
     }
 
     public function getContent(): ?string
@@ -89,6 +63,30 @@ class Messages
     public function setDate(\DateTimeInterface $Date): self
     {
         $this->Date = $Date;
+
+        return $this;
+    }
+
+    public function getSender(): ?User
+    {
+        return $this->sender;
+    }
+
+    public function setSender(?User $sender): self
+    {
+        $this->sender = $sender;
+
+        return $this;
+    }
+
+    public function getChat(): ?Chats
+    {
+        return $this->chat;
+    }
+
+    public function setChat(?Chats $chat): self
+    {
+        $this->chat = $chat;
 
         return $this;
     }

@@ -1,0 +1,16 @@
+{% extends "app/homepage.html.twig" %}
+
+{% block title %}
+	Create chat |
+	{{parent()}}
+{% endblock %}
+
+{% block content %}
+	{{form_start(new)}}
+	{{form_label(new.members)}}
+	{{form_widget(new.members)}}
+	{{form_label(new.name)}}
+	{{form_widget(new.name)}}
+	{{form_widget(new.submit)}}
+	{{form_end(new)}}
+{% endblock %}

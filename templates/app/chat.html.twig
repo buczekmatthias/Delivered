@@ -1,9 +1,6 @@
 {% extends "app/homepage.html.twig" %}
 
-{% block title %}
-	Chat with
-	{{partner}}
-{% endblock %}
+{% block title %}{% endblock %}
 
 {% block content %}
 	<section class="chat">
@@ -11,35 +8,11 @@
 			<a href="{{path('homepage')}}">
 				&lsaquo; Homepage
 			</a>
-			<p>
-				{{partner}}
-			</p>
 		</div>
-		<div class="messages">
-			{% if messages is not empty %}
-				{% for message in messages %}
-					<div class="message" {% if app.session.get('user').id == message.Source.Id %} id="me" {% else %} id="him" {% endif %}>
-						<p class="message-sender">
-							{{message.Source.Name}}
-						</p>
-						<p class="message-content" {% if app.session.get('user').id == message.Source.Id %} id="mine" {% else %} id="notMine" {% endif %}>
-							{{message.Content}}
-						</p>
-						<p class="send-date">
-							{{message.Date|date('H:i d/m/Y')}}
-						</p>
-					</div>
-				{% endfor %}
-			{% else %}
-				<p>
-					You have no messages with
-					{{partner}}
-				</p>
-			{% endif %}
-		</div>
+		<div class="messages"></div>
 		<div class="new-msg">
 			<textarea class="message-box" id="messageContent"></textarea>
-			<button class="send-message" id="messageSend" data-id="{{dataId}}">
+			<button class="send-message" id="messageSend" data-id="">
 				Send
 			</button>
 		</div>

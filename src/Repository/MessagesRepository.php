@@ -21,26 +21,6 @@ class MessagesRepository extends ServiceEntityRepository
         $this->session = $session;
     }
 
-    public function getConversation($id)
-    {
-        $currentUserMessages = $this->createQueryBuilder('m')
-            ->andWhere('m.Source = :logged OR m.Target = :logged')
-            ->setParameter('logged', $this->session->get('user')->getId())
-            ->orderBy('m.Date', 'DESC')
-            ->getQuery()
-            ->getResult();
-
-        $result = array();
-
-        foreach ($currentUserMessages as $k => $v) {
-            if ($v->getSource()->getId() == $id || $v->getTarget()->getId() == $id) {
-                $result[] = $v;
-            }
-        }
-
-        return $result;
-    }
-
     // /**
     //  * @return Messages[] Returns an array of Messages objects
     //  */

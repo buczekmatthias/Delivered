@@ -13,9 +13,9 @@ class VerifyService
 
     public function verify()
     {
-        if ($this->session->get('user')) {
-            return true;
+        if (!$this->session->get('user')) {
+            return false;
         }
-        return false;
+        return true;
     }
 }

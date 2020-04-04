@@ -31,44 +31,6 @@ class UserRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findConversations($id)
-    {
-        $recentUnique = $this->createQueryBuilder('u')
-            ->andWhere('m.Source = :id OR m.Target = :id')
-            ->setParameter('id', $id)
-            ->innerjoin('u.writtenMessages', 'm')
-            ->orderBy('m.Date', 'DESC')
-            ->setMaxResults(8)
-            ->getQuery()
-            ->getResult();
-
-        $recentConvs = array();
-
-        foreach ($recentUnique as $k => $v) {
-            if ($v->getLogin() !== $this->session->getLogin() && !in_array($v, $recentConvs)) {
-                $recentConvs[] = $this->findOneBy(['id' => $v]);
-            }
-        }
-
-        return $recentConvs;
-    }
-
-    public function findPotential()
-    {
-        $amount = $this->findOneBy(array(), array('id' => 'DESC'))->getId();
-
-        $possibilities = array();
-        $used = [];
-        while (sizeof($possibilities) < 5) {
-            $rand = rand(1, $amount);
-            if ($rand !== $this->session->getId() && !in_array($rand, $used)) {
-                $possibilities[] = $this->findOneBy(['id' => $rand]);
-                $used[] = $rand;
-            }
-        }
-        return $possibilities;
-    }
-
     // /**
     //  * @return User[] Returns an array of User objects
     //  */
