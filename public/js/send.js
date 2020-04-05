@@ -1,20 +1,23 @@
-const sendButton = document.getElementById("messageSend");
-const changeName = document.getElementsByClassName("chat-name-change")[0];
-const messageContainer = document.getElementsByClassName("messages")[0];
-let user = document.getElementsByClassName("hello")[0].getAttribute("data-id");
-let hash = document.getElementById("messageSend").getAttribute("data-id");
+const sendButton = document.getElementById("messageSend"); //Submit button of messenger form
+const changeName = document.getElementsByClassName("chat-name-change")[0]; //Container where will name change form go
+const messageContainer = document.getElementsByClassName("messages")[0]; //Container where are messages displayed
+let user = document.getElementsByClassName("hello")[0].getAttribute("data-id"); //User's id
+let hash = document.getElementById("messageSend").getAttribute("data-id"); //Chat's hash
+//Send and refetch messages from API
 if (sendButton) {
-  sendButton.addEventListener("click", function() {
+  sendButton.addEventListener("click", function () {
     messageSend();
     updateChat(hash);
   });
 }
-setInterval(function() {
+//Set auto chat refetch
+setInterval(function () {
   updateChat(hash);
 }, 10000);
 
 if (changeName) {
-  document.getElementById("set").addEventListener("click", function() {
+  //Change name form activation
+  document.getElementById("set").addEventListener("click", function () {
     let input = document.createElement("input");
     input.setAttribute("type", "text");
 
@@ -30,7 +33,7 @@ if (changeName) {
     changeName.appendChild(submit);
     changeName.appendChild(close);
 
-    close.addEventListener("click", function() {
+    close.addEventListener("click", function () {
       close.removeEventListener;
       close.parentNode.removeChild(input);
       close.parentNode.removeChild(submit);
@@ -38,24 +41,25 @@ if (changeName) {
       document.getElementById("set").style.display = "";
       document.getElementsByClassName("chat-name-change")[0].style.height = "0";
     });
-    submit.addEventListener("click", function() {
+    submit.addEventListener("click", function () {
       nameSet(input.value);
     });
   });
 }
 function nameSet(name) {
+  //If name is not null make ajax request to update name and reload
   if (name) {
     $.ajax({
       type: "POST",
       url: `/chat/${hash}/name-set`,
       data: { name: name },
-      success: function(data, dataType) {
+      success: function (data, dataType) {
         window.location.reload();
       },
-      error: function(XMLHttpRequest, textStatus, errorThrown) {
+      error: function (XMLHttpRequest, textStatus, errorThrown) {
         alert("Error occured. Check console to see error log.");
         console.log(errorThrown);
-      }
+      },
     });
   } else {
     alert("You need to provide name");
@@ -64,19 +68,19 @@ function nameSet(name) {
 
 function messageSend() {
   let message = document.getElementById("messageContent");
-
+  //If message is not null make ajax request to send message and fetch messages
   if (message) {
     $.ajax({
       type: "POST",
       url: `/chat/${hash}/send`,
       data: { message: message.value },
-      success: function(data, dataType) {
+      success: function (data, dataType) {
         updateChat(hash);
       },
-      error: function(XMLHttpRequest, textStatus, errorThrown) {
+      error: function (XMLHttpRequest, textStatus, errorThrown) {
         alert("Error occured. Check console to see error log.");
         console.log(errorThrown);
-      }
+      },
     });
     $("#messageContent").val("");
   } else {
@@ -85,19 +89,23 @@ function messageSend() {
 }
 
 function updateChat(hash) {
-  getJSON(`/chat/${hash}/json`, function(err, data) {
+  //Fetch messages through internal API
+  getJSON(`/chat/${hash}/json`, function (err, data) {
     if (err) {
       alert("Error occured. Check console to see error log");
       console.log(err);
     } else {
+      //Show fetched messages and scroll to last message in chat
       displayMessages(JSON.parse(data));
       messageContainer.scrollTop = messageContainer.scrollHeight;
     }
   });
 }
 function displayMessages(messages) {
+  //Clear container
   messageContainer.innerHTML = "";
-  messages.forEach(message => {
+  //Display all messages
+  messages.forEach((message) => {
     let messageCont = document.createElement("div");
     messageCont.classList.add("message-object");
     messageCont.classList.add(
@@ -123,11 +131,12 @@ function displayMessages(messages) {
     messageContainer.appendChild(messageCont);
   });
 }
+//XHR request to fetch data
 function getJSON(url, callback) {
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.responseType = "json";
-  xhr.onload = function() {
+  xhr.onload = function () {
     var status = xhr.status;
     if (status === 200) {
       callback(null, xhr.response);
