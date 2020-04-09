@@ -7,6 +7,7 @@ use App\Entity\Messages;
 use App\Form\ChatType;
 use App\Repository\ChatsRepository;
 use App\Repository\UserRepository;
+use App\Services\ChatService;
 use App\Services\VerifyService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,18 +15,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Encoder\JsonEncode;
 
 class AppController extends AbstractController
 {
-    public function __construct(VerifyService $verify, UserRepository $uR, EntityManagerInterface $em, SessionInterface $session, ChatsRepository $cR)
+    public function __construct(VerifyService $verify, ChatService $chat, UserRepository $uR, EntityManagerInterface $em, SessionInterface $session, ChatsRepository $cR)
     {
         $this->verify = $verify->verify();
+        $this->chat = $chat;
         $this->uR = $uR;
-        $this->session = $session;
+        $this->user = $session->get('user');
         $this->cR = $cR;
         $this->em = $em;
     }
+
     /**
      * @Route("/", name="homepage")
      */
@@ -34,7 +36,7 @@ class AppController extends AbstractController
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
         return $this->render('app/homepage.html.twig', [
-            'chats' => $this->uR->findOneBy(['id' => $this->session->get('user')->getId()])->getChats()
+            'chats' => $this->uR->findOneBy(['id' => $this->user->getId()])->getChats()
         ]);
     }
 
@@ -51,22 +53,22 @@ class AppController extends AbstractController
             $data = $newChat->getData();
 
             //Checks if already exists chat containing same users as those from form
-            $verify = $this->checkIfChatExists($data['members']);
+            $verify = $this->chat->checkIfChatExists($data['members']);
             if ($verify !== false) return $this->redirectToRoute('chat', ['hash' => $verify]);
             unset($verify);
 
             $chat = new Chats();
             //Generates chat hash used as url parameter
-            $hash = $this->generateChatHash();
+            $hash = $this->chat->generateChatHash();
             if ($this->cR->findOneBy(['chatHash' => $hash])) {
                 $i = false;
                 while ($i == false) {
-                    $hash = $this->generateChatHash();
+                    $hash = $this->chat->generateChatHash();
                     if (!$this->cR->findOneBy(['chatHash' => $hash])) $i = true;
                 }
             }
             $chat->setChatHash($hash);
-            $chat->addMember($this->uR->findOneBy(['id' => $this->session->get('user')->getId()]));
+            $chat->addMember($this->uR->findOneBy(['id' => $this->user->getId()]));
             foreach ($data['members'] as $member) {
                 $chat->addMember($member);
             }
@@ -83,36 +85,6 @@ class AppController extends AbstractController
         ]);
     }
 
-    private function generateChatHash()
-    {
-        $output = rand(0, 9);
-        for ($i = 0; $i < 15; $i++) {
-            $output .= rand(0, 9);
-        }
-        return (int) $output;
-    }
-    private function checkIfChatExists($members, $temp = [])
-    {
-        //Get users from form and sort them
-        foreach ($members as $m) {
-            $temp[] = $m->getId();
-        }
-        $members = $temp;
-        sort($members);
-
-        //Get all chats and check if in any of them there is same set of users
-        $chats = $this->uR->findOneBy(['id' => $this->session->get('user')->getId()])->getChats();
-        foreach ($chats as $chat) {
-            $temp = array();
-            foreach ($chat->getMembers() as $member) {
-                if ($member->getId() !== $this->session->get('user')->getId()) $temp[] = $member->getId();
-            }
-            sort($temp);
-            if ($members === $temp) return $chat->getChatHash();
-        }
-        return false;
-    }
-
     /**
      * @Route("/chat/{hash}", name="chat")
      */
@@ -122,9 +94,13 @@ class AppController extends AbstractController
 
         //Get some basic info about chat channel like name or members
         $chat = $this->cR->findOneBy(['chatHash' => $hash]);
+        foreach ($chat->getMessages() as $message) {
+            $message->addDisplayed($this->uR->findOneBy(['id' => $this->user->getId()]));
+        }
+        $this->em->flush();
         $members = [];
         foreach ($chat->getMembers() as $member) {
-            if ($member->getId() !== $this->session->get('user')->getId())
+            if ($member->getId() !== $this->user->getId())
                 $members[] = [
                     'name' => $member->getName() . " " . $member->getSurname()
                 ];
@@ -170,8 +146,9 @@ class AppController extends AbstractController
         $message = new Messages();
         $message->setDate($date);
         $message->setContent($content);
-        $message->setSender($this->uR->findOneBy(['id' => $this->session->get('user')->getId()]));
+        $message->setSender($this->uR->findOneBy(['id' => $this->user->getId()]));
         $message->setChat($this->cR->findOneBy(['chatHash' => $hash]));
+        $message->addDisplayed($this->uR->findOneBy(['id' => $this->user->getId()]));
 
         $this->em->persist($message);
         $this->em->flush();

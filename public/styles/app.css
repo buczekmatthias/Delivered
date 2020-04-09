@@ -67,13 +67,26 @@ nav a {
   min-width: 90%;
 }
 .chats-content .last-message {
-  width: 100%;
+  width: 85%;
   color: rgb(158, 158, 158);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .chats-content .last-message-time {
   width: 10%;
   text-align: right;
   color: rgb(124, 123, 123);
+}
+.chats-content .unread-messages {
+  width: 10%;
+  text-align: right;
+}
+.chats-content .unread-messages span {
+  background-color: rgb(255, 58, 58);
+  color: #fff;
+  font-size: 1.1em;
+  padding: 0.2em 0.5em;
+  border-radius: 50%;
 }
 
 .chat {

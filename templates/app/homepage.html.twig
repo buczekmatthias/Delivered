@@ -139,6 +139,29 @@
 								Chat is so quiet. Tap to begin the talk...
 							{% endif %}
 						</p>
+						{% set unread = 0 %}
+						{% for message in chat.messages %}
+							{% set temp = true %}
+							{% set isIn = 0 %}
+							{% for user in message.displayed %}
+								{% if (isIn == 0) and (user.id != app.session.get('user').id) and (loop.last) %}
+									{% set temp = false %}
+								{% endif %}
+								{% if user.id == app.session.get('user').id %}
+									{% set isIn = 1 %}
+								{% endif %}
+							{% endfor %}
+							{% if temp == false %}
+								{% set unread = unread + 1 %}
+							{% endif %}
+						{% endfor %}
+						{% if unread > 0 %}
+							<p class="unread-messages">
+								<span>
+									{{unread}}
+								</span>
+							</p>
+						{% endif %}
 					</a>
 				{% endfor %}
 			</div>

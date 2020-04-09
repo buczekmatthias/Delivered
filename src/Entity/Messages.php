@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -37,6 +39,16 @@ class Messages
      * @ORM\JoinColumn(nullable=false)
      */
     private $chat;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\User")
+     */
+    private $displayed;
+
+    public function __construct()
+    {
+        $this->displayed = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -87,6 +99,32 @@ class Messages
     public function setChat(?Chats $chat): self
     {
         $this->chat = $chat;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|User[]
+     */
+    public function getDisplayed(): Collection
+    {
+        return $this->displayed;
+    }
+
+    public function addDisplayed(User $displayed): self
+    {
+        if (!$this->displayed->contains($displayed)) {
+            $this->displayed[] = $displayed;
+        }
+
+        return $this;
+    }
+
+    public function removeDisplayed(User $displayed): self
+    {
+        if ($this->displayed->contains($displayed)) {
+            $this->displayed->removeElement($displayed);
+        }
 
         return $this;
     }
