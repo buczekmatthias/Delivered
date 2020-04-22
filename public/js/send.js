@@ -2,22 +2,41 @@ const sendButton = document.getElementById("messageSend"); //Submit button of me
 const changeName = document.getElementsByClassName("chat-name-change")[0]; //Container where will name change form go
 const messageContainer = document.getElementsByClassName("messages")[0]; //Container where are messages displayed
 let user = document.getElementsByClassName("hello")[0].getAttribute("data-id"); //User's id
-let hash = document.getElementById("messageSend").getAttribute("data-id"); //Chat's hash
+let hash = document.getElementsByClassName("chat")[0].getAttribute("data-id"); //Chat's hash
+let file = document.getElementById("messageFile"); //File button
 //Send and refetch messages from API
 if (sendButton) {
-  sendButton.addEventListener("click", function () {
+  sendButton.addEventListener("click", () => {
     messageSend();
     updateChat(hash);
   });
 }
+if (file) {
+  file.addEventListener("change", () => {
+    if (file.files.length > 0) {
+      let img = file.files[0];
+      let formData = new FormData();
+      formData.append("file", img);
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", `/chat/${hash}/send`, true);
+        xhr.send(formData);
+        $("#messageFile").val("");
+      } catch (error) {
+        alert("Error occured. Check console to see error log.");
+        console.log(error);
+      }
+    }
+  });
+}
 //Set auto chat refetch
-setInterval(function () {
+setInterval(() => {
   updateChat(hash);
 }, 10000);
 
 if (changeName) {
   //Change name form activation
-  document.getElementById("set").addEventListener("click", function () {
+  document.getElementById("set").addEventListener("click", () => {
     let input = document.createElement("input");
     input.setAttribute("type", "text");
 
@@ -33,7 +52,7 @@ if (changeName) {
     changeName.appendChild(submit);
     changeName.appendChild(close);
 
-    close.addEventListener("click", function () {
+    close.addEventListener("click", () => {
       close.removeEventListener;
       close.parentNode.removeChild(input);
       close.parentNode.removeChild(submit);
@@ -41,7 +60,7 @@ if (changeName) {
       document.getElementById("set").style.display = "";
       document.getElementsByClassName("chat-name-change")[0].style.height = "0";
     });
-    submit.addEventListener("click", function () {
+    submit.addEventListener("click", () => {
       nameSet(input.value);
     });
   });
@@ -53,10 +72,10 @@ function nameSet(name) {
       type: "POST",
       url: `/chat/${hash}/name-set`,
       data: { name: name },
-      success: function (data, dataType) {
+      success: (data, dataType) => {
         window.location.reload();
       },
-      error: function (XMLHttpRequest, textStatus, errorThrown) {
+      error: (XMLHttpRequest, textStatus, errorThrown) => {
         alert("Error occured. Check console to see error log.");
         console.log(errorThrown);
       },
@@ -74,15 +93,15 @@ function messageSend() {
       type: "POST",
       url: `/chat/${hash}/send`,
       data: { message: message.value },
-      success: function (data, dataType) {
+      success: (data, dataType) => {
+        $("#messageContent").val("");
         updateChat(hash);
       },
-      error: function (XMLHttpRequest, textStatus, errorThrown) {
+      error: (XMLHttpRequest, textStatus, errorThrown) => {
         alert("Error occured. Check console to see error log.");
         console.log(errorThrown);
       },
     });
-    $("#messageContent").val("");
   } else {
     alert("You need to provide message");
   }
@@ -90,7 +109,7 @@ function messageSend() {
 
 function updateChat(hash) {
   //Fetch messages through internal API
-  getJSON(`/chat/${hash}/json`, function (err, data) {
+  getJSON(`/chat/${hash}/json`, (err, data) => {
     if (err) {
       alert("Error occured. Check console to see error log");
       console.log(err);
@@ -112,14 +131,19 @@ function displayMessages(messages) {
       user == message["authorId"] ? "sent" : "received"
     );
     let messageBubble = document.createElement("div");
-    messageBubble.classList.add("message-content");
-    messageBubble.innerText = message["content"];
+    if (message["content"]) {
+      messageBubble.classList.add("message-content");
+      messageBubble.innerText = message["content"];
+    }
+    if (message["file"]) {
+      messageBubble.classList.add("message-file");
+      messageBubble.innerHTML = `<a href="/images/chatFiles/${message["file"]}" download><object data="/images/chatFiles/${message["file"]}"></object></a>`;
+    }
 
     let author = document.createElement("p");
     author.classList.add("message-author");
-    author.innerText = messageCont.classList.contains("sent")
-      ? "Me"
-      : message["author"];
+    if (!messageCont.classList.contains("sent"))
+      author.innerText = message["author"];
 
     let sent = document.createElement("p");
     sent.classList.add("message-sent-at");
@@ -131,12 +155,13 @@ function displayMessages(messages) {
     messageContainer.appendChild(messageCont);
   });
 }
-//XHR request to fetch data
+
+//XHR request to get data
 function getJSON(url, callback) {
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.responseType = "json";
-  xhr.onload = function () {
+  xhr.onload = () => {
     var status = xhr.status;
     if (status === 200) {
       callback(null, xhr.response);

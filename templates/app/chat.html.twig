@@ -1,9 +1,16 @@
 {% extends "app/homepage.html.twig" %}
 
-{% block title %}{% endblock %}
+{% block title %}
+	{% if name is not null %}
+		{{name}}
+	{% else %}
+		Chat with
+		{{members.0.name}}
+	{% endif %}
+{% endblock %}
 
 {% block content %}
-	<section class="chat">
+	<section class="chat" data-id="{{hash}}">
 		<div class="side">
 			<a href="{{path('homepage')}}">
 				Back to homepage
@@ -18,7 +25,12 @@
 					</span>
 				{% else %}
 					<p class="edit">
-						This chat got no name.
+						{% if members|length > 1 %}
+							This chat got no name.
+						{% else %}
+							Chat with
+							{{members.0.name}}
+						{% endif %}
 						<span id="set">
 							Edit
 						</span>
@@ -26,19 +38,25 @@
 				{% endif %}
 				<div class="chat-name-change"></div>
 			</div>
-			<div class="messenger-chat-members">
-				{% for member in members %}
-					<p class="member">
-						{{member.name}}
-					</p>
-				{% endfor %}
-			</div>
+			{% if members|length > 1 %}
+				<div class="messenger-chat-members">
+					{% for member in members %}
+						<p class="member">
+							{{member.name}}
+						</p>
+					{% endfor %}
+				</div>
+			{% endif %}
 		</div>
 		<div class="messenger">
 			<div class="messages"></div>
 			<div class="new-msg">
+				<label for="messageFile" class="messageFile-pic">
+					&oplus;
+				</label>
+				<input type="file" id="messageFile" class="messageFile">
 				<textarea class="message-box" id="messageContent"></textarea>
-				<button class="send-message" id="messageSend" data-id="{{hash}}">
+				<button class="send-message" id="messageSend">
 					Send
 				</button>
 			</div>

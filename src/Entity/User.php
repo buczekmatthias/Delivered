@@ -53,10 +53,27 @@ class User
      */
     private $chats;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ChatFiles", mappedBy="user")
+     */
+    private $chatFiles;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\JoinRequests", mappedBy="user")
+     */
+    private $joinRequests;
+
+    /**
+     * @ORM\Column(type="blob", nullable=true)
+     */
+    private $userImg;
+
     public function __construct()
     {
         $this->messages = new ArrayCollection();
         $this->chats = new ArrayCollection();
+        $this->chatFiles = new ArrayCollection();
+        $this->joinRequests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -179,6 +196,80 @@ class User
             $this->chats->removeElement($chat);
             $chat->removeMember($this);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ChatFiles[]
+     */
+    public function getChatFiles(): Collection
+    {
+        return $this->chatFiles;
+    }
+
+    public function addChatFile(ChatFiles $chatFile): self
+    {
+        if (!$this->chatFiles->contains($chatFile)) {
+            $this->chatFiles[] = $chatFile;
+            $chatFile->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChatFile(ChatFiles $chatFile): self
+    {
+        if ($this->chatFiles->contains($chatFile)) {
+            $this->chatFiles->removeElement($chatFile);
+            // set the owning side to null (unless already changed)
+            if ($chatFile->getUser() === $this) {
+                $chatFile->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|JoinRequests[]
+     */
+    public function getJoinRequests(): Collection
+    {
+        return $this->joinRequests;
+    }
+
+    public function addJoinRequest(JoinRequests $joinRequest): self
+    {
+        if (!$this->joinRequests->contains($joinRequest)) {
+            $this->joinRequests[] = $joinRequest;
+            $joinRequest->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeJoinRequest(JoinRequests $joinRequest): self
+    {
+        if ($this->joinRequests->contains($joinRequest)) {
+            $this->joinRequests->removeElement($joinRequest);
+            // set the owning side to null (unless already changed)
+            if ($joinRequest->getUser() === $this) {
+                $joinRequest->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUserImg()
+    {
+        return $this->userImg;
+    }
+
+    public function setUserImg($userImg): self
+    {
+        $this->userImg = $userImg;
 
         return $this;
     }

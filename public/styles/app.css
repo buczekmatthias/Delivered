@@ -181,6 +181,13 @@ nav a {
   justify-content: space-between;
   align-items: center;
 }
+.messageFile {
+  display: none;
+}
+.messageFile-pic {
+  cursor: pointer;
+  font-size: 2em;
+}
 .message-box {
   width: 88%;
   height: 100%;
@@ -215,6 +222,21 @@ nav a {
   display: flex;
   align-items: center;
   color: #fff;
+}
+.message-file {
+  max-width: 50%;
+  height: auto;
+  min-height: 40px;
+  border-radius: 30px;
+  font-size: 1.4em;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+object {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 30px;
 }
 .sent {
   align-items: flex-end;

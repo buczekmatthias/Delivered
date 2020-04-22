@@ -134,7 +134,12 @@
 						</p>
 						<p class="last-message">
 							{% if chat.messages|length > 0 %}
-								{{chat.messages|reverse|slice(0,1).0.Content}}
+								{% if chat.messages|reverse|slice(0,1).0.Content is not null %}
+									{{chat.messages|reverse|slice(0,1).0.Content}}
+								{% else %}
+									{{chat.messages|reverse|slice(0,1).0.sender.Name}}
+									sent a file
+								{% endif %}
 							{% else %}
 								Chat is so quiet. Tap to begin the talk...
 							{% endif %}

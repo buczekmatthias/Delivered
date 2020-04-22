@@ -2,15 +2,19 @@
 
 namespace App\Controller;
 
+use App\Entity\ChatFiles;
 use App\Entity\Chats;
+use App\Entity\JoinRequests;
 use App\Entity\Messages;
 use App\Form\ChatType;
 use App\Repository\ChatsRepository;
+use App\Repository\JoinRequestsRepository;
 use App\Repository\UserRepository;
 use App\Services\ChatService;
 use App\Services\VerifyService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -18,7 +22,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AppController extends AbstractController
 {
-    public function __construct(VerifyService $verify, ChatService $chat, UserRepository $uR, EntityManagerInterface $em, SessionInterface $session, ChatsRepository $cR)
+    public function __construct(VerifyService $verify, JoinRequestsRepository $jrR, ChatService $chat, UserRepository $uR, EntityManagerInterface $em, SessionInterface $session, ChatsRepository $cR)
     {
         $this->verify = $verify->verify();
         $this->chat = $chat;
@@ -26,6 +30,7 @@ class AppController extends AbstractController
         $this->user = $session->get('user');
         $this->cR = $cR;
         $this->em = $em;
+        $this->jrR = $jrR;
     }
 
     /**
@@ -54,7 +59,10 @@ class AppController extends AbstractController
 
             //Checks if already exists chat containing same users as those from form
             $verify = $this->chat->checkIfChatExists($data['members']);
-            if ($verify !== false) return $this->redirectToRoute('chat', ['hash' => $verify]);
+            if ($verify !== false) {
+                if ($this->cR->checkIfJoined($verify)) return $this->redirectToRoute('chat', ['hash' => $verify]);
+                else return $this->requestPopup($verify);
+            }
             unset($verify);
 
             $chat = new Chats();
@@ -85,6 +93,36 @@ class AppController extends AbstractController
         ]);
     }
 
+    protected function requestPopup(int $hash)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $chat = $this->cR->findOneBy(['hash' => $hash]);
+        $chat->setImage(stream_get_contents($chat->getImage()));
+        return $this->render('app/chatpopup.html.twig', [
+            'chatPop' => $chat
+        ]);
+    }
+
+    /**
+     * @Route("/chat/{hash}/request", name="requestChatJoin", methods={"POST"})
+     */
+    public function requestJoin(int $hash)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $chat = $this->cR->findOneBy(['hash' => $hash]);
+        $user = $this->uR->findOneBy(['id' => $this->user->getId()]);
+
+        $chatRequest = new JoinRequests();
+        $chatRequest->setUser($user);
+        $chatRequest->setChat($chat);
+
+        $this->em->persist($chatRequest);
+        $this->em->flush();
+        return new Response();
+    }
+
     /**
      * @Route("/chat/{hash}", name="chat")
      */
@@ -111,6 +149,59 @@ class AppController extends AbstractController
             'members' => $members
         ]);
     }
+
+    /**
+     * @Route("/chat/{hash}/requestList", name="chatRequestList")
+     */
+    public function requestList(int $hash)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $list = [];
+        $temp = $this->jrR->findBy(['chat.chat_hash' => $hash]);
+        foreach ($temp as $t) {
+            $user = $t->getUser();
+            $user->setUserImg(stream_get_contents($user->getUserImg()));
+            $list[] = $user;
+        }
+        unset($temp);
+        unset($user);
+
+        return $this->render('requestlist.html.twig', [
+            'list' => $list
+        ]);
+    }
+
+    /**
+     * @Route("/request/{reqId}/approve", name="approveRequest", methods={"POST"})
+     */
+    public function approveRequest(int $reqId)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $request = $this->jrR->findOneBy(['id' => $reqId]);
+        $chat = $request->getChat();
+        $chat->addMember($request->getUser());
+        $this->em->remove($request);
+        $this->em->flush();
+
+        return new Response();
+    }
+
+    /**
+     * @Route("/request/{reqId}/remove", name="removeRequest", methods={"POST"})
+     */
+    public function removeRequest(int $reqId)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $request = $this->jrR->findOneBy(['id' => $reqId]);
+        $this->em->remove($request);
+        $this->em->flush();
+
+        return new Response();
+    }
+
     /**
      * @Route("/chat/{hash}/json", name="chatJSON", methods={"GET"})
      */
@@ -126,7 +217,8 @@ class AppController extends AbstractController
                 'content' => $message->getContent(),
                 'date' => $message->getDate()->format('H:i:s d.m.Y'),
                 'author' => $message->getSender()->getName(),
-                'authorId' => $message->getSender()->getId()
+                'authorId' => $message->getSender()->getId(),
+                'file' => stream_get_contents($message->getFile()->getFile())
             ];
         }
         unset($temp);
@@ -142,12 +234,33 @@ class AppController extends AbstractController
         if (!$this->verify) return $this->redirectToRoute('login', []);
         $date = new \DateTime();
         $content = $request->get('message');
+        $file = $request->files->get('file');
+        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
+        $user = $this->uR->findOneBy(['id' => $this->user->getId()]);
 
         $message = new Messages();
         $message->setDate($date);
-        $message->setContent($content);
-        $message->setSender($this->uR->findOneBy(['id' => $this->user->getId()]));
-        $message->setChat($this->cR->findOneBy(['chatHash' => $hash]));
+        if ($content) $message->setContent($content);
+        if ($file) {
+            $f = new ChatFiles();
+            $f->setUser($user);
+            $f->setChat($chat);
+            $newName = date('Ymd') . '-' . uniqid() . '.' . $file->guessExtension();
+            try {
+                $file->move(
+                    'images/chatFiles/',
+                    $newName
+                );
+            } catch (FileException $e) {
+                $this->addFlash('danger', "Error occured: " . $e->getMessage());
+            }
+            $f->setFile($newName);
+            $this->em->persist($f);
+            $this->em->flush();
+            $message->setFile($f);
+        }
+        $message->setSender($user);
+        $message->setChat($chat);
         $message->addDisplayed($this->uR->findOneBy(['id' => $this->user->getId()]));
 
         $this->em->persist($message);
@@ -166,6 +279,20 @@ class AppController extends AbstractController
         $name = $request->get('name');
         $chat = $this->cR->findOneBy(['chatHash' => $hash]);
         $chat->setChatName($name);
+        $this->em->flush();
+
+        return new Response();
+    }
+
+    /**
+     * @Route("/chat/{hash}/set-image", name="setImageChat", methods={"POST"})
+     */
+    public function setImageChat(int $hash, Request $request)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $chat = $this->cR->findOneBy(['hash' => $hash]);
+        $chat->setImageChat($_FILES['imageChat']);
         $this->em->flush();
 
         return new Response();

@@ -20,6 +20,7 @@ class Messages
 
     /**
      * @ORM\Column(type="text")
+     * @ORM\JoinColumn(nullable=true)
      */
     private $Content;
 
@@ -44,6 +45,11 @@ class Messages
      * @ORM\ManyToMany(targetEntity="App\Entity\User")
      */
     private $displayed;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\ChatFiles", cascade={"persist", "remove"})
+     */
+    private $file;
 
     public function __construct()
     {
@@ -125,6 +131,18 @@ class Messages
         if ($this->displayed->contains($displayed)) {
             $this->displayed->removeElement($displayed);
         }
+
+        return $this;
+    }
+
+    public function getFile(): ?ChatFiles
+    {
+        return $this->file;
+    }
+
+    public function setFile(?ChatFiles $file): self
+    {
+        $this->file = $file;
 
         return $this;
     }

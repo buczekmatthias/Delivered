@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Chats;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * @method Chats|null find($id, $lockMode = null, $lockVersion = null)
@@ -14,9 +15,22 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  */
 class ChatsRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, SessionInterface $session)
     {
         parent::__construct($registry, Chats::class);
+        $this->user = $session->get('user');
+    }
+
+    public function checkIfJoined($hash)
+    {
+        $result = $this->createQueryBuilder('c')
+            ->andWhere('u.id = :id and c.hash = :hash')
+            ->setParameter('id', $this->user->getId())
+            ->setParameter('hash', $hash)
+            ->leftJoin('c.members', 'u')
+            ->getQuery()
+            ->getResult();
+        return $result ? TRUE : FALSE;
     }
 
     // /**

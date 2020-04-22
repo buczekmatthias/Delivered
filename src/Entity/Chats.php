@@ -25,6 +25,7 @@ class Chats
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\User", inversedBy="chats")
+     * @ORM\JoinTable(name="chat_members")
      */
     private $members;
 
@@ -38,10 +39,34 @@ class Chats
      */
     private $chatName;
 
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\User")
+     * @ORM\JoinTable(name="chat_admins")
+     */
+    private $admins;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\ChatFiles", mappedBy="chat")
+     */
+    private $chatFiles;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\JoinRequests", mappedBy="chat")
+     */
+    private $joinRequests;
+
+    /**
+     * @ORM\Column(type="blob", nullable=true)
+     */
+    private $image;
+
     public function __construct()
     {
         $this->members = new ArrayCollection();
         $this->messages = new ArrayCollection();
+        $this->admins = new ArrayCollection();
+        $this->chatFiles = new ArrayCollection();
+        $this->joinRequests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -126,6 +151,106 @@ class Chats
     public function setChatName(?string $chatName): self
     {
         $this->chatName = $chatName;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|User[]
+     */
+    public function getAdmins(): Collection
+    {
+        return $this->admins;
+    }
+
+    public function addAdmin(User $admin): self
+    {
+        if (!$this->admins->contains($admin)) {
+            $this->admins[] = $admin;
+        }
+
+        return $this;
+    }
+
+    public function removeAdmin(User $admin): self
+    {
+        if ($this->admins->contains($admin)) {
+            $this->admins->removeElement($admin);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|ChatFiles[]
+     */
+    public function getChatFiles(): Collection
+    {
+        return $this->chatFiles;
+    }
+
+    public function addChatFile(ChatFiles $chatFile): self
+    {
+        if (!$this->chatFiles->contains($chatFile)) {
+            $this->chatFiles[] = $chatFile;
+            $chatFile->setChat($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChatFile(ChatFiles $chatFile): self
+    {
+        if ($this->chatFiles->contains($chatFile)) {
+            $this->chatFiles->removeElement($chatFile);
+            // set the owning side to null (unless already changed)
+            if ($chatFile->getChat() === $this) {
+                $chatFile->setChat(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|JoinRequests[]
+     */
+    public function getJoinRequests(): Collection
+    {
+        return $this->joinRequests;
+    }
+
+    public function addJoinRequest(JoinRequests $joinRequest): self
+    {
+        if (!$this->joinRequests->contains($joinRequest)) {
+            $this->joinRequests[] = $joinRequest;
+            $joinRequest->setChat($this);
+        }
+
+        return $this;
+    }
+
+    public function removeJoinRequest(JoinRequests $joinRequest): self
+    {
+        if ($this->joinRequests->contains($joinRequest)) {
+            $this->joinRequests->removeElement($joinRequest);
+            // set the owning side to null (unless already changed)
+            if ($joinRequest->getChat() === $this) {
+                $joinRequest->setChat(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    public function setImage($image): self
+    {
+        $this->image = $image;
 
         return $this;
     }
