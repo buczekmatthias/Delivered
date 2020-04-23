@@ -14,6 +14,8 @@ use App\Services\ChatService;
 use App\Services\VerifyService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +24,9 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AppController extends AbstractController
 {
+    // TODO: Popup if there is already a chat that uesr is trying to create but doen't belong to
+    // TODO: User file change
+    // TODO: Join requests
     public function __construct(VerifyService $verify, JoinRequestsRepository $jrR, ChatService $chat, UserRepository $uR, EntityManagerInterface $em, SessionInterface $session, ChatsRepository $cR)
     {
         $this->verify = $verify->verify();
@@ -97,7 +102,7 @@ class AppController extends AbstractController
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
-        $chat = $this->cR->findOneBy(['hash' => $hash]);
+        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
         $chat->setImage(stream_get_contents($chat->getImage()));
         return $this->render('app/chatpopup.html.twig', [
             'chatPop' => $chat
@@ -111,7 +116,7 @@ class AppController extends AbstractController
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
-        $chat = $this->cR->findOneBy(['hash' => $hash]);
+        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
         $user = $this->uR->findOneBy(['id' => $this->user->getId()]);
 
         $chatRequest = new JoinRequests();
@@ -138,15 +143,15 @@ class AppController extends AbstractController
         $this->em->flush();
         $members = [];
         foreach ($chat->getMembers() as $member) {
-            if ($member->getId() !== $this->user->getId())
-                $members[] = [
-                    'name' => $member->getName() . " " . $member->getSurname()
-                ];
+            $members[] = [
+                'name' => $member->getName() . " " . $member->getSurname()
+            ];
         }
         return $this->render('app/chat.html.twig', [
             'hash' => $hash,
             'name' => $chat->getChatName(),
-            'members' => $members
+            'members' => $members,
+            'image' => $chat->getImage() ? stream_get_contents($chat->getImage()) : null
         ]);
     }
 
@@ -214,11 +219,11 @@ class AppController extends AbstractController
         $output = [];
         foreach ($temp->getMessages() as $message) {
             $output[] = [
-                'content' => $message->getContent(),
+                'content' => $message->getContent() ? $message->getContent() : null,
                 'date' => $message->getDate()->format('H:i:s d.m.Y'),
                 'author' => $message->getSender()->getName(),
                 'authorId' => $message->getSender()->getId(),
-                'file' => stream_get_contents($message->getFile()->getFile())
+                'file' => $message->getFile() ? stream_get_contents($message->getFile()->getFile()) : null
             ];
         }
         unset($temp);
@@ -233,7 +238,7 @@ class AppController extends AbstractController
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
         $date = new \DateTime();
-        $content = $request->get('message');
+        $content = $request->request->get('message');
         $file = $request->files->get('file');
         $chat = $this->cR->findOneBy(['chatHash' => $hash]);
         $user = $this->uR->findOneBy(['id' => $this->user->getId()]);
@@ -252,7 +257,7 @@ class AppController extends AbstractController
                     $newName
                 );
             } catch (FileException $e) {
-                $this->addFlash('danger', "Error occured: " . $e->getMessage());
+                throw new FileException('Error occured while uploading. Error code: %d. Try again!', sprintf($e->getMessage()));
             }
             $f->setFile($newName);
             $this->em->persist($f);
@@ -287,12 +292,26 @@ class AppController extends AbstractController
     /**
      * @Route("/chat/{hash}/set-image", name="setImageChat", methods={"POST"})
      */
-    public function setImageChat(int $hash, Request $request)
+    public function setImageChat(int $hash, Request $request, ParameterBagInterface $pb)
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
-        $chat = $this->cR->findOneBy(['hash' => $hash]);
-        $chat->setImageChat($_FILES['imageChat']);
+        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
+        $file = $request->files->get('file');
+        $newName = $chat->getChatHash() . '-' . uniqid() . '.' . $file->guessExtension();
+        try {
+            $file->move(
+                'images/chat/',
+                $newName
+            );
+            if ($chat->getImage()) {
+                $filesystem = new Filesystem();
+                $filesystem->remove($pb->get('kernel.project_dir') . '/public/images/chat/' . stream_get_contents($chat->getImage()));
+            }
+        } catch (FileException $e) {
+            throw new FileException('Error occured while uploading. Error code: %d. Try again!', sprintf($e->getMessage()));
+        }
+        $chat->setImage($newName);
         $this->em->flush();
 
         return new Response();

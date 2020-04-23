@@ -10,11 +10,28 @@
 
 {% block body %}
 	<nav>
-		<p class="hello" data-id="{{app.session.get('user').id}}">
-			Hello,
-			{{app.session.get('user').Name}}
-			{{app.session.get('user').Surname}}
-		</p>
+		<div class="logo">
+			<img src="/images/logo.png">
+			<p>
+				Delivered
+			</p>
+		</div>
+		<div class="user-nav-elem" data-id="{{app.session.get('user').id}}">
+			{% if app.session.get('user').userImg is not null %}
+				<label for="userImg" class="user-img-set">
+					<img src="{{'/images/users/' ~ app.session.get('user').userImg}}">
+				</label>
+			{% else %}
+				<label for="userImg" class="user-img-set">
+					<img src="/images/upload.png">
+				</label>
+			{% endif %}
+			<input type="file" id="userImg">
+			<p>
+				{{app.session.get('user').Name}}
+				{{app.session.get('user').Surname}}
+			</p>
+		</div>
 
 		<a href="{{path('logout')}}">
 			Logout
@@ -172,4 +189,11 @@
 			</div>
 		</section>
 	{% endblock %}
+{% endblock %}
+
+{% block headJS %}
+	<script src="/js/jquery.js"></script>
+{% endblock %}
+{% block javascripts %}
+	<script src="/js/send.js"></script>
 {% endblock %}

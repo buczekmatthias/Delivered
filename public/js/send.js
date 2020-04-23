@@ -1,9 +1,16 @@
 const sendButton = document.getElementById("messageSend"); //Submit button of messenger form
 const changeName = document.getElementsByClassName("chat-name-change")[0]; //Container where will name change form go
 const messageContainer = document.getElementsByClassName("messages")[0]; //Container where are messages displayed
-let user = document.getElementsByClassName("hello")[0].getAttribute("data-id"); //User's id
-let hash = document.getElementsByClassName("chat")[0].getAttribute("data-id"); //Chat's hash
-let file = document.getElementById("messageFile"); //File button
+const file = document.getElementById("messageFile"); //File button
+const chatimg = document.getElementById("chatImage"); //Chat file button
+const user = document
+  .getElementsByClassName("user-nav-elem")[0]
+  .getAttribute("data-id"); //User's id
+const usrimg = document.getElementById("userImg"); //User file button
+
+if (window.location.href.indexOf("chat") != -1) {
+  let hash = document.getElementsByClassName("chat")[0].getAttribute("data-id"); //Chat's hash
+}
 //Send and refetch messages from API
 if (sendButton) {
   sendButton.addEventListener("click", () => {
@@ -14,12 +21,51 @@ if (sendButton) {
 if (file) {
   file.addEventListener("change", () => {
     if (file.files.length > 0) {
-      let img = file.files[0];
       let formData = new FormData();
-      formData.append("file", img);
+      formData.append("file", file.files[0]);
       try {
         var xhr = new XMLHttpRequest();
         xhr.open("POST", `/chat/${hash}/send`, true);
+        xhr.send(formData);
+        $("#messageFile").val("");
+      } catch (error) {
+        alert("Error occured. Check console to see error log.");
+        console.log(error);
+      }
+    }
+  });
+}
+if (chatimg) {
+  chatimg.addEventListener("change", () => {
+    if (chatimg.files.length > 0) {
+      let formData = new FormData();
+      formData.append("file", chatimg.files[0]);
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", `/chat/${hash}/set-image`, true);
+        xhr.onload = () => {
+          window.location.reload();
+        };
+        xhr.send(formData);
+        $("#messageFile").val("");
+      } catch (error) {
+        alert("Error occured. Check console to see error log.");
+        console.log(error);
+      }
+    }
+  });
+}
+if (usrimg) {
+  usrimg.addEventListener("change", () => {
+    if (usrimg.files.length > 0) {
+      let formData = new FormData();
+      formData.append("file", usrimg.files[0]);
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", `/u/set-image`, true);
+        xhr.onload = () => {
+          window.location.reload();
+        };
         xhr.send(formData);
         $("#messageFile").val("");
       } catch (error) {
@@ -89,19 +135,18 @@ function messageSend() {
   let message = document.getElementById("messageContent");
   //If message is not null make ajax request to send message and fetch messages
   if (message) {
-    $.ajax({
-      type: "POST",
-      url: `/chat/${hash}/send`,
-      data: { message: message.value },
-      success: (data, dataType) => {
-        $("#messageContent").val("");
-        updateChat(hash);
-      },
-      error: (XMLHttpRequest, textStatus, errorThrown) => {
-        alert("Error occured. Check console to see error log.");
-        console.log(errorThrown);
-      },
-    });
+    try {
+      var xhr = new XMLHttpRequest();
+      let fD = new FormData();
+      fD.append("message", message.value);
+      xhr.open("POST", `/chat/${hash}/send`, true);
+      xhr.send(fD);
+      $("#messageContent").val("");
+      updateChat(hash);
+    } catch (error) {
+      alert("Error occured. Check console to see error log.");
+      console.log(error);
+    }
   } else {
     alert("You need to provide message");
   }

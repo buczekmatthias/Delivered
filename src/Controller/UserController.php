@@ -11,6 +11,11 @@ use App\Form\LoginType;
 use App\Form\RegisterType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\BrowserKit\Response;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class UserController extends AbstractController
@@ -29,9 +34,7 @@ class UserController extends AbstractController
      */
     public function login()
     {
-        if ($this->verify) {
-            return $this->redirectToRoute('homepage', []);
-        }
+        if ($this->verify) return $this->redirectToRoute('homepage', []);
 
         $login = $this->createForm(LoginType::class);
         $login->handleRequest($this->request);
@@ -41,6 +44,7 @@ class UserController extends AbstractController
             $account = $this->uR->findOneBy(['Login' => $data->getLogin()]);
 
             if ($account && $account->getPassword() === $data->getPassword()) {
+                if ($account->getUserImg()) $account->setUserImg(stream_get_contents($account->getUserImg()));
                 $this->session->set('user', $account);
 
                 return $this->redirectToRoute('homepage', []);
@@ -57,9 +61,7 @@ class UserController extends AbstractController
      */
     public function register()
     {
-        if ($this->verify) {
-            return $this->redirectToRoute('homepage', []);
-        }
+        if ($this->verify) return $this->redirectToRoute('homepage', []);
 
         $register = $this->createForm(RegisterType::class);
         $register->handleRequest($this->request);
@@ -96,9 +98,36 @@ class UserController extends AbstractController
      */
     public function logout()
     {
-        if ($this->verify) {
-            $this->session->clear();
-        }
+        if ($this->verify) $this->session->clear();
+
         return $this->redirectToRoute('login', []);
+    }
+
+    /**
+     * @Route("/u/set-image", name="user-set-image", methods={"POST"})
+     */
+    public function setUserImage(HttpFoundationRequest $request, ParameterBagInterface $pb)
+    {
+        if ($this->verify) return $this->redirectToRoute('homepage', []);
+
+        $user = $this->uR->findOneBy(['id' => $this->session->get('user')->getId()]);
+        $file = $request->files->get('file');
+        $newName = $user->getId() . '-' . uniqid() . '.' . $file->guessExtension();
+        try {
+            $file->move(
+                'images/users/',
+                $newName
+            );
+            if ($user->getUserImg()) {
+                $filesystem = new Filesystem();
+                $filesystem->remove($pb->get('kernel.project_dir') . '/public/images/users/' . stream_get_contents($user->getUserImg()));
+            }
+        } catch (FileException $e) {
+            throw new FileException('Error occured while uploading. Error code: %d. Try again!', sprintf($e->getMessage()));
+        }
+        $user->setImage($newName);
+        $this->em->flush();
+
+        return new Response();
     }
 }

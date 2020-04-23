@@ -15,6 +15,18 @@
 			<a href="{{path('homepage')}}">
 				Back to homepage
 			</a>
+			<div class="chat-image">
+				{% if image is not null %}
+					<label for="chatImage" class="chat-upload-file">
+						<img src="{{'/images/chat/' ~ image}}">
+					</label>
+				{% else %}
+					<label for="chatImage" class="chat-upload-file">
+						<img src="{{'/images/upload.png'}}">
+					</label>
+				{% endif %}
+				<input type="file" id="chatImage">
+			</div>
 			<div class="messenger-chat-name">
 				{% if name is not null %}
 					<p class="chat-name">
@@ -25,12 +37,7 @@
 					</span>
 				{% else %}
 					<p class="edit">
-						{% if members|length > 1 %}
-							This chat got no name.
-						{% else %}
-							Chat with
-							{{members.0.name}}
-						{% endif %}
+						This chat is not named
 						<span id="set">
 							Edit
 						</span>
@@ -38,15 +45,13 @@
 				{% endif %}
 				<div class="chat-name-change"></div>
 			</div>
-			{% if members|length > 1 %}
-				<div class="messenger-chat-members">
-					{% for member in members %}
-						<p class="member">
-							{{member.name}}
-						</p>
-					{% endfor %}
-				</div>
-			{% endif %}
+			<div class="messenger-chat-members">
+				<b>{{members|length}}</b>
+				members
+				<p id="add-new-members">
+					Add
+				</p>
+			</div>
 		</div>
 		<div class="messenger">
 			<div class="messages"></div>
@@ -62,9 +67,4 @@
 			</div>
 		</div>
 	</section>
-{% endblock %}
-
-{% block javascripts %}
-	<script src="/js/send.js"></script>
-	<script src="/js/jquery.js"></script>
 {% endblock %}
