@@ -25,7 +25,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class AppController extends AbstractController
 {
     // TODO: Popup if there is already a chat that uesr is trying to create but doen't belong to
-    // TODO: User file change
     // TODO: Join requests
     public function __construct(VerifyService $verify, JoinRequestsRepository $jrR, ChatService $chat, UserRepository $uR, EntityManagerInterface $em, SessionInterface $session, ChatsRepository $cR)
     {

@@ -68,3 +68,8 @@
 		</div>
 	</section>
 {% endblock %}
+
+{% block javascripts %}
+	{{parent()}}
+	<script src="/js/chat.js"></script>
+{% endblock %}

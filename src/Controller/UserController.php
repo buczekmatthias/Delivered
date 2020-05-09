@@ -11,11 +11,11 @@ use App\Form\LoginType;
 use App\Form\RegisterType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\BrowserKit\Response;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class UserController extends AbstractController
@@ -106,12 +106,12 @@ class UserController extends AbstractController
     /**
      * @Route("/u/set-image", name="user-set-image", methods={"POST"})
      */
-    public function setUserImage(HttpFoundationRequest $request, ParameterBagInterface $pb)
+    public function setUserImage(Request $request, ParameterBagInterface $pb)
     {
-        if ($this->verify) return $this->redirectToRoute('homepage', []);
+        if (!$this->verify) return $this->redirectToRoute('login', []);
 
         $user = $this->uR->findOneBy(['id' => $this->session->get('user')->getId()]);
-        $file = $request->files->get('file');
+        $file = $request->files->get('profileImg');
         $newName = $user->getId() . '-' . uniqid() . '.' . $file->guessExtension();
         try {
             $file->move(
@@ -125,7 +125,8 @@ class UserController extends AbstractController
         } catch (FileException $e) {
             throw new FileException('Error occured while uploading. Error code: %d. Try again!', sprintf($e->getMessage()));
         }
-        $user->setImage($newName);
+        $user->setUserImg($newName);
+        $this->session->set('user', $user);
         $this->em->flush();
 
         return new Response();

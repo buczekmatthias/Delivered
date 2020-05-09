@@ -6,17 +6,18 @@ const chatimg = document.getElementById("chatImage"); //Chat file button
 const user = document
   .getElementsByClassName("user-nav-elem")[0]
   .getAttribute("data-id"); //User's id
-const usrimg = document.getElementById("userImg"); //User file button
+const hash = document.getElementsByClassName("chat")[0].getAttribute("data-id"); //Chat's hash
 
-if (window.location.href.indexOf("chat") != -1) {
-  let hash = document.getElementsByClassName("chat")[0].getAttribute("data-id"); //Chat's hash
-}
 //Send and refetch messages from API
 if (sendButton) {
   sendButton.addEventListener("click", () => {
     messageSend();
     updateChat(hash);
   });
+  //Set auto chat refetch
+  setInterval(() => {
+    updateChat(hash);
+  }, 10000);
 }
 if (file) {
   file.addEventListener("change", () => {
@@ -24,10 +25,10 @@ if (file) {
       let formData = new FormData();
       formData.append("file", file.files[0]);
       try {
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open("POST", `/chat/${hash}/send`, true);
         xhr.send(formData);
-        $("#messageFile").val("");
+        document.getElementById("messageFile").value = "";
       } catch (error) {
         alert("Error occured. Check console to see error log.");
         console.log(error);
@@ -41,13 +42,12 @@ if (chatimg) {
       let formData = new FormData();
       formData.append("file", chatimg.files[0]);
       try {
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         xhr.open("POST", `/chat/${hash}/set-image`, true);
         xhr.onload = () => {
           window.location.reload();
         };
         xhr.send(formData);
-        $("#messageFile").val("");
       } catch (error) {
         alert("Error occured. Check console to see error log.");
         console.log(error);
@@ -55,30 +55,6 @@ if (chatimg) {
     }
   });
 }
-if (usrimg) {
-  usrimg.addEventListener("change", () => {
-    if (usrimg.files.length > 0) {
-      let formData = new FormData();
-      formData.append("file", usrimg.files[0]);
-      try {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", `/u/set-image`, true);
-        xhr.onload = () => {
-          window.location.reload();
-        };
-        xhr.send(formData);
-        $("#messageFile").val("");
-      } catch (error) {
-        alert("Error occured. Check console to see error log.");
-        console.log(error);
-      }
-    }
-  });
-}
-//Set auto chat refetch
-setInterval(() => {
-  updateChat(hash);
-}, 10000);
 
 if (changeName) {
   //Change name form activation
@@ -114,18 +90,19 @@ if (changeName) {
 function nameSet(name) {
   //If name is not null make ajax request to update name and reload
   if (name) {
-    $.ajax({
-      type: "POST",
-      url: `/chat/${hash}/name-set`,
-      data: { name: name },
-      success: (data, dataType) => {
+    try {
+      let xhr = new XMLHttpRequest();
+      let fD = new FormData();
+      fD.append("name", name);
+      xhr.open("POST", `/chat/${hash}/name-set`, true);
+      xhr.onload = () => {
         window.location.reload();
-      },
-      error: (XMLHttpRequest, textStatus, errorThrown) => {
-        alert("Error occured. Check console to see error log.");
-        console.log(errorThrown);
-      },
-    });
+      };
+      xhr.send(fD);
+    } catch (error) {
+      alert("Error occured. Check console to see error log.");
+      console.log(error);
+    }
   } else {
     alert("You need to provide name");
   }
@@ -136,12 +113,12 @@ function messageSend() {
   //If message is not null make ajax request to send message and fetch messages
   if (message) {
     try {
-      var xhr = new XMLHttpRequest();
+      let xhr = new XMLHttpRequest();
       let fD = new FormData();
       fD.append("message", message.value);
       xhr.open("POST", `/chat/${hash}/send`, true);
       xhr.send(fD);
-      $("#messageContent").val("");
+      document.getElementById("messageContent").value = "";
       updateChat(hash);
     } catch (error) {
       alert("Error occured. Check console to see error log.");
@@ -203,11 +180,11 @@ function displayMessages(messages) {
 
 //XHR request to get data
 function getJSON(url, callback) {
-  var xhr = new XMLHttpRequest();
+  let xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.responseType = "json";
   xhr.onload = () => {
-    var status = xhr.status;
+    let status = xhr.status;
     if (status === 200) {
       callback(null, xhr.response);
     } else {
