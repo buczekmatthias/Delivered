@@ -1,20 +1,22 @@
 <div class="pop-join-request">
+	<span class='exist-pop'>
+		This chat already exists!
+	</span>
 	{% if pop.image is not null %}
 		<img src="{{'/images/chat/' ~ image}}">
+	{% else %}
+		<img src="images/chat-bubbles.png">
 	{% endif %}
-	<p class="c-name">
+	<span class="c-name">
 		{{name}}
-	</p>
-	<p class="c-members">
+	</span>
+	<span class="c-members">
 		<b>
 			{{members}}
 		</b>
 		members
-	</p>
-	<p class="c-join" data-hash="{{hash}}">
+	</span>
+	<span class="c-join" data-hash="{{hash}}">
 		Request join
-	</p>
-	<p class="c-close">
-		Close
-	</p>
+	</span>
 </div>

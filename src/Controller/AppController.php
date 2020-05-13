@@ -24,8 +24,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AppController extends AbstractController
 {
-    // TODO: Popup if there is already a chat that uesr is trying to create but doen't belong to
-    // TODO: Join requests
+    // TODO: User can check created requests
     public function __construct(VerifyService $verify, JoinRequestsRepository $jrR, ChatService $chat, UserRepository $uR, EntityManagerInterface $em, SessionInterface $session, ChatsRepository $cR)
     {
         $this->verify = $verify->verify();
@@ -102,14 +101,34 @@ class AppController extends AbstractController
         ]);
     }
 
-    protected function requestPopup(int $hash)
+    /**
+     * @Route("/chat/{hash}", name="chat")
+     */
+    public function chat(int $hash, $admin = false)
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
+        //Get some basic info about chat channel like name or members
         $chat = $this->cR->findOneBy(['chatHash' => $hash]);
-        $chat->setImage(stream_get_contents($chat->getImage()));
-        return $this->render('app/chatpopup.html.twig', [
-            'chatPop' => $chat
+        foreach ($chat->getMessages() as $message) {
+            $message->addDisplayed($this->uR->findOneBy(['id' => $this->user->getId()]));
+        }
+        $this->em->flush();
+        $members = [];
+        foreach ($chat->getMembers() as $member) {
+            $members[] = [
+                'name' => $member->getName() . " " . $member->getSurname()
+            ];
+        }
+        foreach ($chat->getAdmins() as $admin) {
+            if ($admin->getId() === $this->user->getId()) $admin = true;
+        }
+        return $this->render('app/chat.html.twig', [
+            'hash' => $hash,
+            'name' => $chat->getChatName(),
+            'members' => $members,
+            'image' => $chat->getImage() ? stream_get_contents($chat->getImage()) : null,
+            'admin' => $admin
         ]);
     }
 
@@ -130,33 +149,6 @@ class AppController extends AbstractController
         $this->em->persist($chatRequest);
         $this->em->flush();
         return new Response();
-    }
-
-    /**
-     * @Route("/chat/{hash}", name="chat")
-     */
-    public function chat(int $hash)
-    {
-        if (!$this->verify) return $this->redirectToRoute('login', []);
-
-        //Get some basic info about chat channel like name or members
-        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
-        foreach ($chat->getMessages() as $message) {
-            $message->addDisplayed($this->uR->findOneBy(['id' => $this->user->getId()]));
-        }
-        $this->em->flush();
-        $members = [];
-        foreach ($chat->getMembers() as $member) {
-            $members[] = [
-                'name' => $member->getName() . " " . $member->getSurname()
-            ];
-        }
-        return $this->render('app/chat.html.twig', [
-            'hash' => $hash,
-            'name' => $chat->getChatName(),
-            'members' => $members,
-            'image' => $chat->getImage() ? stream_get_contents($chat->getImage()) : null
-        ]);
     }
 
     /**

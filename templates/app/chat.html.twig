@@ -48,9 +48,14 @@
 			<div class="messenger-chat-members">
 				<b>{{members|length}}</b>
 				members
-				<p id="add-new-members">
-					Add
-				</p>
+				{% if admin == TRUE %}
+					<p id="add-new-members">
+						Add
+					</p>
+					<p id="chat-requests">
+						Requests
+					</p>
+				{% endif %}
 			</div>
 		</div>
 		<div class="messenger">

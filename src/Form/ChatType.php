@@ -30,15 +30,25 @@ class ChatType extends AbstractType
                         ->setParameter('userId', $this->id);
                 },
                 'choice_label' => function ($user) {
-                    return $user->getName() . ' ' . $user->getSurname();
+                    return $user->getUserImg() ? '<img src="/images/users/' . stream_get_contents($user->getUserImg()) . '">' . $user->getName() . ' ' . $user->getSurname() : '<img src="/images/man.png">' . $user->getName() . ' ' . $user->getSurname();
                 },
                 'multiple' => true,
-                'expanded' => true
+                'expanded' => true,
+                'attr' => [
+                    'class' => 'set-members'
+                ]
             ])
             ->add('name', TextType::class, [
-                'required' => false
+                'required' => false,
+                'attr' => [
+                    'class' => 'set-name'
+                ]
             ])
-            ->add('submit', SubmitType::class);
+            ->add('submit', SubmitType::class, [
+                'attr' => [
+                    'class' => 'set-submit'
+                ]
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver)

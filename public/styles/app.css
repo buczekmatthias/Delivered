@@ -305,3 +305,147 @@ object {
 .message-sent-at {
   font-size: 0.8em;
 }
+
+.create-chat-box {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  height: 90vh;
+  margin: 0 auto;
+  padding: 1.5em;
+}
+.set-back {
+  font-size: 1.8em;
+  text-decoration: none;
+  color: rgb(236, 89, 89);
+  margin-bottom: 0.5em;
+}
+.create-chat-box form {
+  display: flex;
+  flex-direction: column;
+}
+.create-chat-box form > label {
+  font-size: 1.45em;
+  font-weight: bold;
+}
+.form-js-members {
+  display: flex;
+  width: 100%;
+  height: 2.5em;
+  justify-content: space-between;
+  align-items: center;
+}
+.form-members-counter {
+  font-size: 1.2em;
+}
+.form-members-add {
+  font-size: 1.2em;
+  padding: 0.3em 0.7em;
+  background-color: rgb(236, 89, 89);
+  color: #fff;
+  border-radius: 15px;
+  cursor: pointer;
+}
+.create-chat-box img {
+  height: 45px;
+  width: 45px;
+  border-radius: 50%;
+  padding: 0.2em;
+  border: 1px solid #000;
+}
+.form-member-box {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  height: 65px;
+  border-bottom: 0.5px solid rgb(139, 139, 139);
+  padding: 0 0.5em;
+  cursor: pointer;
+}
+.form-member-box img {
+  margin-right: 0.75em;
+}
+.form-member-box .member-box-label {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-width: 25%;
+}
+.set-members {
+  display: none;
+  position: absolute;
+  top: 5vh;
+  left: 27.5%;
+  height: 90vh;
+  width: 45%;
+  background-color: rgb(240, 240, 240);
+  z-index: 25;
+  padding: 0.3em 0.4em;
+  overflow: auto;
+  color: rgb(58, 58, 58);
+}
+.ok-button {
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  padding: 0.5em 0.8em;
+  background-color: rgb(236, 89, 89);
+  color: #fff;
+  font-size: 1.3em;
+  cursor: pointer;
+  border-radius: 15px;
+}
+.set-name {
+  width: 50%;
+  height: 20%;
+  padding: 0 0.3em;
+}
+.set-submit {
+  margin-top: 0.6em;
+  width: 30%;
+  height: 35%;
+  background-color: rgb(236, 89, 89);
+  color: #fff;
+  font-size: 1.3em;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+.pop-join-request {
+  width: 75%;
+  height: 60%;
+  margin: auto;
+  padding: 0.35em 0.5em;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  background-color: rgba(248, 248, 248, 0.842);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 15px;
+}
+.exist-pop {
+  font-size: 1.55em;
+  font-weight: bold;
+}
+.pop-join-request img {
+  width: 75px;
+  height: 75px;
+}
+.c-name {
+  font-size: 1.3em;
+}
+.c-members {
+  font-size: 1.2em;
+}
+.c-join {
+  padding: 0.3em 0.7em;
+  border-radius: 15px;
+  font-size: 1.25em;
+  cursor: pointer;
+  background-color: rgb(236, 89, 89);
+  color: #fff;
+  border: none;
+}

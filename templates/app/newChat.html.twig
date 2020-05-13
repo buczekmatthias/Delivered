@@ -6,20 +6,46 @@
 {% endblock %}
 
 {% block content %}
-	<a href="{{path('homepage')}}">
-		Back to homepage
-	</a>
-	{{form_start(new)}}
-	{{form_label(new.members)}}
-	{{form_widget(new.members)}}
-	{{form_label(new.name)}}
-	{{form_widget(new.name)}}
-	{{form_widget(new.submit)}}
-	{{form_end(new)}}
+	<section class="create-chat-box">
+		<a href="{{path('homepage')}}" class="set-back">
+			Back to homepage
+		</a>
+		{{form_start(new)}}
+		{{form_label(new.members)}}
+		<div class="form-js-members">
+			<div class="form-members-counter">
+				<b id="js-members-counter">
+					0
+				</b>
+				members selected
+			</div>
+			<p class="form-members-add">
+				Select members
+			</p>
+		</div>
+		<div id="chatCreate_members" class="set-members">
+			{% for elem in new.children.members.vars.choices %}
+				<label for="{{'chatCreate_members_' ~ elem.value}}" class="form-member-box">
+					<input type="checkbox" id="{{'chatCreate_members_' ~ elem.value}}" name="chatCreate[members][]" value={{elem.value}}>
+					<p class="member-box-label">
+						{{elem.label|raw}}
+					</p>
+				</label>
+			{% endfor %}
+			<span class="ok-button">
+				OK
+			</span>
+		</div>
+		{{form_label(new.name)}}
+		{{form_widget(new.name)}}
+		{{form_widget(new.submit)}}
+		{{form_widget(new._token)}}
+		{{form_end(new, {'render_rest': false})}}
 
-	{% if pop != false %}
-		{% include "app/chatpopup.html.twig" with {'image': pop.image, 'name': pop.chatName, 'members': pop.members|length, 'hash': pop.chatHash} %}
-	{% endif %}
+		{% if pop != false %}
+			{% include "app/chatpopup.html.twig" with {'image': pop.image, 'name': pop.chatName, 'members': pop.members|length, 'hash': pop.chatHash} %}
+		{% endif %}
+	</section>
 {% endblock %}
 
 {% block javascripts %}
