@@ -52,48 +52,53 @@ class AppController extends AbstractController
     /**
      * @Route("/new-chat", name="chatCreate")
      */
-    public function newChat(Request $request)
+    public function newChat(Request $request, $popData = false)
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
         $newChat = $this->createForm(ChatType::class);
         $newChat->handleRequest($request);
+
         if ($newChat->isSubmitted() && $newChat->isValid()) {
             $data = $newChat->getData();
 
             //Checks if already exists chat containing same users as those from form
             $verify = $this->chat->checkIfChatExists($data['members']);
             if ($verify !== false) {
-                if ($this->cR->checkIfJoined($verify)) return $this->redirectToRoute('chat', ['hash' => $verify]);
-                else return $this->requestPopup($verify);
+                if (array_key_exists('hash', $verify)) return $this->redirectToRoute('chat', ['hash' => $verify]);
+                else {
+                    $popData = $this->cR->findOneBy(['chatHash' => $verify['request']]);
+                    if ($popData->getImage()) $popData->setImage(stream_get_contents($popData->getImage()));
+                }
+            } else {
+                $chat = new Chats();
+                //Generates chat hash used as url parameter
+                $hash = $this->chat->generateChatHash();
+                if ($this->cR->findOneBy(['chatHash' => $hash])) {
+                    $i = false;
+                    while ($i == false) {
+                        $hash = $this->chat->generateChatHash();
+                        if (!$this->cR->findOneBy(['chatHash' => $hash])) $i = true;
+                    }
+                }
+                $chat->setChatHash($hash);
+                $chat->addMember($this->uR->findOneBy(['id' => $this->user->getId()]));
+                foreach ($data['members'] as $member) {
+                    $chat->addMember($member);
+                }
+                $chat->setChatName($data['name']);
+
+                $this->em->persist($chat);
+                $this->em->flush();
+
+                return $this->redirectToRoute('chat', ['hash' => $hash]);
             }
             unset($verify);
-
-            $chat = new Chats();
-            //Generates chat hash used as url parameter
-            $hash = $this->chat->generateChatHash();
-            if ($this->cR->findOneBy(['chatHash' => $hash])) {
-                $i = false;
-                while ($i == false) {
-                    $hash = $this->chat->generateChatHash();
-                    if (!$this->cR->findOneBy(['chatHash' => $hash])) $i = true;
-                }
-            }
-            $chat->setChatHash($hash);
-            $chat->addMember($this->uR->findOneBy(['id' => $this->user->getId()]));
-            foreach ($data['members'] as $member) {
-                $chat->addMember($member);
-            }
-            $chat->setChatName($data['name']);
-
-            $this->em->persist($chat);
-            $this->em->flush();
-
-            return $this->redirectToRoute('chat', ['hash' => $hash]);
         }
 
         return $this->render('app/newChat.html.twig', [
-            'new' => $newChat->createView()
+            'new' => $newChat->createView(),
+            'pop' => $popData
         ]);
     }
 

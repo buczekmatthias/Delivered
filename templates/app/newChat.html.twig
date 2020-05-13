@@ -6,6 +6,9 @@
 {% endblock %}
 
 {% block content %}
+	<a href="{{path('homepage')}}">
+		Back to homepage
+	</a>
 	{{form_start(new)}}
 	{{form_label(new.members)}}
 	{{form_widget(new.members)}}
@@ -13,4 +16,13 @@
 	{{form_widget(new.name)}}
 	{{form_widget(new.submit)}}
 	{{form_end(new)}}
+
+	{% if pop != false %}
+		{% include "app/chatpopup.html.twig" with {'image': pop.image, 'name': pop.chatName, 'members': pop.members|length, 'hash': pop.chatHash} %}
+	{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+	{{parent()}}
+	<script src="/js/request.js"></script>
 {% endblock %}

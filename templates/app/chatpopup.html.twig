@@ -1,13 +1,20 @@
-<div class="chat-request-pop">
-	<img src="{{'images/chat/' ~ chatPop.image}}" class="chat-image-pop">
-	<p class="chat-name-pop">
-		{{chatPop.chatName}}
+<div class="pop-join-request">
+	{% if pop.image is not null %}
+		<img src="{{'/images/chat/' ~ image}}">
+	{% endif %}
+	<p class="c-name">
+		{{name}}
 	</p>
-	<p class="chat-members-pop">
-		{{chatPop.members|length}}
+	<p class="c-members">
+		<b>
+			{{members}}
+		</b>
 		members
 	</p>
-	<a href="">
-		Join request
-	</a>
+	<p class="c-join" data-hash="{{hash}}">
+		Request join
+	</p>
+	<p class="c-close">
+		Close
+	</p>
 </div>

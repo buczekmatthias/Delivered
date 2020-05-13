@@ -21,18 +21,6 @@ class ChatsRepository extends ServiceEntityRepository
         $this->user = $session->get('user');
     }
 
-    public function checkIfJoined($hash)
-    {
-        $result = $this->createQueryBuilder('c')
-            ->andWhere('u.id = :id and c.hash = :hash')
-            ->setParameter('id', $this->user->getId())
-            ->setParameter('hash', $hash)
-            ->leftJoin('c.members', 'u')
-            ->getQuery()
-            ->getResult();
-        return $result ? TRUE : FALSE;
-    }
-
     // /**
     //  * @return Chats[] Returns an array of Chats objects
     //  */

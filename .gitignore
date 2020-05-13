@@ -6,7 +6,9 @@
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
-/public/images/
+/public/images/chat/
+/public/images/chatFiles/
+/public/images/users/
 /var/
 /vendor/
 ###< symfony/framework-bundle ###

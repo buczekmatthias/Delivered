@@ -2,15 +2,17 @@
 
 namespace App\Services;
 
+use App\Repository\ChatsRepository;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class ChatService
 {
-    public function __construct(SessionInterface $session, UserRepository $uR)
+    public function __construct(SessionInterface $session, UserRepository $uR, ChatsRepository $cR)
     {
         $this->user = $session->get('user');
         $this->uR = $uR;
+        $this->cR = $cR;
     }
     public function generateChatHash()
     {
@@ -27,17 +29,22 @@ class ChatService
             $temp[] = $m->getId();
         }
         $members = $temp;
+        $members[] = $this->user->getId();
         sort($members);
 
         //Get all chats and check if in any of them there is same set of users
-        $chats = $this->uR->findOneBy(['id' => $this->user->getId()])->getChats();
+        $chats = $this->cR->findAll();
         foreach ($chats as $chat) {
             $temp = array();
             foreach ($chat->getMembers() as $member) {
-                if ($member->getId() !== $this->user->getId()) $temp[] = $member->getId();
+                $temp[] = $member->getId();
             }
             sort($temp);
-            if ($members === $temp) return $chat->getChatHash();
+            if ($members === $temp) return ['hash' => $chat->getChatHash()];
+            if (sizeof($temp) > 2) {
+                $merge = array_merge(array_diff($members, $temp), array_diff($temp, $members));
+                if (sizeof($merge) === 1 && in_array($this->user->getId(), $merge)) return ['request' => $chat->getChatHash()];
+            }
         }
         return false;
     }
