@@ -7,9 +7,11 @@ const user = document
   .getElementsByClassName("user-nav-elem")[0]
   .getAttribute("data-id"); //User's id
 const hash = document.getElementsByClassName("chat")[0].getAttribute("data-id"); //Chat's hash
+const requestsElem = document.getElementById("chat-requests");
 
 //Send and refetch messages from API
 if (sendButton) {
+  updateChat(hash);
   sendButton.addEventListener("click", () => {
     messageSend();
     updateChat(hash);
@@ -18,6 +20,11 @@ if (sendButton) {
   setInterval(() => {
     updateChat(hash);
   }, 10000);
+}
+if (requestsElem) {
+  requestsElem.addEventListener("click", () => {
+    requests(hash);
+  });
 }
 if (file) {
   file.addEventListener("change", () => {
@@ -30,7 +37,7 @@ if (file) {
         xhr.send(formData);
         document.getElementById("messageFile").value = "";
       } catch (error) {
-        alert("Error occured. Check console to see error log.");
+        alert("Error occured. Check console to see error status.");
         console.log(error);
       }
     }
@@ -49,7 +56,7 @@ if (chatimg) {
         };
         xhr.send(formData);
       } catch (error) {
-        alert("Error occured. Check console to see error log.");
+        alert("Error occured. Check console to see error status.");
         console.log(error);
       }
     }
@@ -100,7 +107,7 @@ function nameSet(name) {
       };
       xhr.send(fD);
     } catch (error) {
-      alert("Error occured. Check console to see error log.");
+      alert("Error occured. Check console to see error status.");
       console.log(error);
     }
   } else {
@@ -121,7 +128,7 @@ function messageSend() {
       document.getElementById("messageContent").value = "";
       updateChat(hash);
     } catch (error) {
-      alert("Error occured. Check console to see error log.");
+      alert("Error occured. Check console to see error status.");
       console.log(error);
     }
   } else {
@@ -130,13 +137,13 @@ function messageSend() {
 }
 
 function updateChat(hash) {
-  //Fetch messages through internal API
-  getJSON(`/chat/${hash}/json`, (err, data) => {
+  //Get messages through internal API
+  getJSON(`/chat/${hash}/json/messages`, (err, data) => {
     if (err) {
-      alert("Error occured. Check console to see error log");
+      alert("Error occured. Check console to see error status");
       console.log(err);
     } else {
-      //Show fetched messages and scroll to last message in chat
+      //Show taken messages and scroll to last message in chat
       displayMessages(JSON.parse(data));
       messageContainer.scrollTop = messageContainer.scrollHeight;
     }
@@ -176,6 +183,98 @@ function displayMessages(messages) {
     messageCont.appendChild(sent);
     messageContainer.appendChild(messageCont);
   });
+}
+
+function requests(hash) {
+  getJSON(`/chat/${hash}/json/request-list`, (err, data) => {
+    if (err) {
+      alert("Error occured. Check console to see error status");
+      console.log(err);
+    } else {
+      //Show taken messages and scroll to last message in chat
+      displayList(JSON.parse(data));
+    }
+  });
+}
+
+function displayList(list) {
+  let bg = document.createElement("div");
+  bg.classList.add("request-list-bg");
+  bg.style.backgroundColor = "#000";
+  bg.style.opacity = ".35";
+  bg.style.zIndex = 24;
+  bg.style.width = "100vw";
+  bg.style.height = "100vh";
+  bg.style.position = "absolute";
+  bg.style.top = 0;
+  bg.style.left = 0;
+
+  document.body.insertBefore(bg, document.body.children[0]);
+  let reqBox = document.createElement("div");
+  reqBox.classList.add("request-box-list");
+
+  let close = document.createElement("span");
+  close.classList.add("close-elem");
+  close.innerText = "Close";
+
+  reqBox.appendChild(close);
+
+  close.addEventListener("click", () => {
+    window.location.href = `/chat/${hash}`;
+  });
+
+  list.forEach((requestor) => {
+    let elem = document.createElement("div");
+    elem.classList.add("member-request");
+    elem.setAttribute("data-request-id", requestor["request-id"]);
+
+    let img = document.createElement("img");
+    img.classList.add("profile-img-request");
+    img.src = `/images/${
+      requestor["image"] ? "users/" + requestor["image"] : "man.png"
+    }`;
+
+    let name = document.createElement("span");
+    name.classList.add("name-request");
+    name.innerText = requestor["name"];
+
+    let accept = document.createElement("span");
+    accept.classList.add("accept");
+    accept.innerText = "Accept";
+
+    let decline = document.createElement("span");
+    decline.classList.add("decline");
+    decline.innerText = "Decline";
+
+    accept.addEventListener("click", () => {
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST", `/request/${requestor["request-id"]}/approve`);
+      xhr.onload = () => {
+        document.body.removeChild(bg);
+        document.body.removeChild(reqBox);
+        requests(hash);
+      };
+      xhr.send();
+    });
+
+    decline.addEventListener("click", () => {
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST", `/request/${requestor["request-id"]}/remove`);
+      xhr.onload = () => {
+        document.body.removeChild(bg);
+        document.body.removeChild(reqBox);
+        requests(hash);
+      };
+      xhr.send();
+    });
+
+    elem.appendChild(img);
+    elem.appendChild(name);
+    elem.appendChild(accept);
+    elem.appendChild(decline);
+    reqBox.appendChild(elem);
+  });
+  document.body.insertBefore(reqBox, bg);
 }
 
 //XHR request to get data

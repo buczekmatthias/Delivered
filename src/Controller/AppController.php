@@ -86,6 +86,10 @@ class AppController extends AbstractController
                     $chat->addMember($member);
                 }
                 $chat->setChatName($data['name']);
+                if (sizeof($data['members']) + 1 == 2) {
+                    $chat->addAdmin($this->uR->findOneBy(['id' => $this->user->getId()]));
+                    $chat->addAdmin($this->uR->findOneBy(['id' => $data['members'][0]->getId()]));
+                } else $chat->addAdmin($this->uR->findOneBy(['id' => $this->user->getId()]));
 
                 $this->em->persist($chat);
                 $this->em->flush();
@@ -152,25 +156,24 @@ class AppController extends AbstractController
     }
 
     /**
-     * @Route("/chat/{hash}/requestList", name="chatRequestList")
+     * @Route("/chat/{hash}/json/request-list", name="chatRequestList", methods={"GET"})
      */
     public function requestList(int $hash)
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
         $list = [];
-        $temp = $this->jrR->findBy(['chat.chat_hash' => $hash]);
-        foreach ($temp as $t) {
-            $user = $t->getUser();
-            $user->setUserImg(stream_get_contents($user->getUserImg()));
-            $list[] = $user;
+        $temp = $this->jrR->getChatRequests($hash);
+        foreach ($temp as $chat) {
+            $user = $chat->getUser();
+            $list[] = [
+                'request-id' => $chat->getId(),
+                'image' => $user->getUserImg() ? stream_get_contents($user->getUserImg()) : null,
+                'name' => $user->getName() . ' ' . $user->getSurname()
+            ];
         }
-        unset($temp);
-        unset($user);
 
-        return $this->render('requestlist.html.twig', [
-            'list' => $list
-        ]);
+        return $this->json([json_encode($list)]);
     }
 
     /**
@@ -181,8 +184,8 @@ class AppController extends AbstractController
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
         $request = $this->jrR->findOneBy(['id' => $reqId]);
-        $chat = $request->getChat();
-        $chat->addMember($request->getUser());
+        $request->getChat()->addMember($request->getUser());
+
         $this->em->remove($request);
         $this->em->flush();
 
@@ -204,9 +207,9 @@ class AppController extends AbstractController
     }
 
     /**
-     * @Route("/chat/{hash}/json", name="chatJSON", methods={"GET"})
+     * @Route("/chat/{hash}/json/messages", name="messageJSON", methods={"GET"})
      */
-    public function chatJSON(int $hash)
+    public function messagesJSON(int $hash)
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 

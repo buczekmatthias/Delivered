@@ -19,6 +19,16 @@ class JoinRequestsRepository extends ServiceEntityRepository
         parent::__construct($registry, JoinRequests::class);
     }
 
+    public function getChatRequests($hash)
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('c.chatHash = :hash')
+            ->setParameter(':hash', $hash)
+            ->leftJoin('r.chat', 'c')
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return JoinRequests[] Returns an array of JoinRequests objects
     //  */
