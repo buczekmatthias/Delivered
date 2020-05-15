@@ -25,6 +25,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class AppController extends AbstractController
 {
     // TODO: User can check created requests
+    // TODO: Adding users (JSON + js + dynamic search)
     public function __construct(VerifyService $verify, JoinRequestsRepository $jrR, ChatService $chat, UserRepository $uR, EntityManagerInterface $em, SessionInterface $session, ChatsRepository $cR)
     {
         $this->verify = $verify->verify();
@@ -121,11 +122,16 @@ class AppController extends AbstractController
         $members = [];
         foreach ($chat->getMembers() as $member) {
             $members[] = [
+                'id' => $member->getId(),
+                'image' => $member->getUserImg() ? stream_get_contents($member->getUserImg()) : null,
                 'name' => $member->getName() . " " . $member->getSurname()
             ];
         }
         foreach ($chat->getAdmins() as $admin) {
-            if ($admin->getId() === $this->user->getId()) $admin = true;
+            if ($admin->getId() === $this->user->getId()) {
+                $admin = true;
+                break;
+            }
         }
         return $this->render('app/chat.html.twig', [
             'hash' => $hash,
@@ -228,6 +234,35 @@ class AppController extends AbstractController
         unset($temp);
 
         return $this->json([json_encode($output)]);
+    }
+
+    /**
+     * @Route("/chat/{hash}/{member}/delete", name="deleteChatMember", methods={"POST"})
+     */
+    public function deleteChatMember(int $hash, int $member, $admin = false)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
+        foreach ($chat->getAdmins() as $admin) {
+            if ($admin->getId() === $this->user->getId()) {
+                $admin = true;
+                break;
+            }
+        }
+        if ($admin) {
+            $member = $this->uR->findOneBy(['id' => $member]);
+            $chat->removeMembers($member);
+            foreach ($chat->getAdmins() as $admin) {
+                if ($admin->getId() === $member->getId()) {
+                    $chat->removeAdmins($member);
+                    break;
+                }
+            }
+            $this->em->flush();
+        }
+
+        return new Response();
     }
 
     /**

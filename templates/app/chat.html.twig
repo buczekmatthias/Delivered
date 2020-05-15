@@ -57,6 +57,26 @@
 					</p>
 				{% endif %}
 			</div>
+			<div class="chat-members-display">
+				<span class="members-display-close">
+					Close
+				</span>
+				{% for member in members %}
+					<div class="member-display-elem">
+						{% if member.image is not null %}
+							<img src="{{'/images/users/' ~ member.image}}">
+						{% else %}
+							<img src="{{'/images/man.png'}}">
+						{% endif %}
+						<span class="members-display-name">
+							{{member.nane}}
+						</span>
+						<span class="delete-member" data-id={{member.id}}>
+							Delete
+						</span>
+					</div>
+				{% endfor %}
+			</div>
 		</div>
 		<div class="messenger">
 			<div class="messages"></div>
