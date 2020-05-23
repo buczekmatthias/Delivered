@@ -46,8 +46,10 @@
 				<div class="chat-name-change"></div>
 			</div>
 			<div class="messenger-chat-members">
-				<b>{{members|length}}</b>
-				members
+				<p class="members-counter-chat">
+					<b>{{members|length}}</b>
+					members
+				</p>
 				{% if admin == TRUE %}
 					<p id="add-new-members">
 						Add
@@ -66,10 +68,10 @@
 						{% if member.image is not null %}
 							<img src="{{'/images/users/' ~ member.image}}">
 						{% else %}
-							<img src="{{'/images/man.png'}}">
+							<img src="/images/man.png">
 						{% endif %}
 						<span class="members-display-name">
-							{{member.nane}}
+							{{member.name}}
 						</span>
 						<span class="delete-member" data-id={{member.id}}>
 							Delete

@@ -8,6 +8,35 @@ const user = document
   .getAttribute("data-id"); //User's id
 const hash = document.getElementsByClassName("chat")[0].getAttribute("data-id"); //Chat's hash
 const requestsElem = document.getElementById("chat-requests");
+const membersList = document.getElementsByClassName("members-counter-chat")[0];
+const closeMembers = document.getElementsByClassName(
+  "members-display-close"
+)[0];
+let membersBox = document.getElementsByClassName("delete-member");
+
+Array.from(membersBox).forEach((member, index) => {
+  member.addEventListener("click", () => {
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", `/chat/${hash}/${member.getAttribute("data-id")}/delete`);
+    xhr.onload = () => {
+      if (parseInt(membersList.children[0].innerText) > 1) {
+        Array.from(membersBox)[index].parentElement.remove();
+        membersList.children[0].innerText =
+          parseInt(membersList.children[0].innerText) - 1;
+      } else {
+        window.location.href = "/";
+      }
+    };
+    xhr.send();
+  });
+});
+
+membersList.addEventListener("click", () => {
+  closeMembers.parentElement.style.display = "flex";
+});
+closeMembers.addEventListener("click", () => {
+  closeMembers.parentElement.style.display = "none";
+});
 
 //Send and refetch messages from API
 if (sendButton) {

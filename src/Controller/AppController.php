@@ -13,6 +13,7 @@ use App\Repository\UserRepository;
 use App\Services\ChatService;
 use App\Services\VerifyService;
 use Doctrine\ORM\EntityManagerInterface;
+use Error;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -237,9 +238,57 @@ class AppController extends AbstractController
     }
 
     /**
+     * @Route("/chat/{hash}/json/members-to-add", name="memberToAdd", methods={"GET"})
+     */
+    public function memberToAdd(int $hash, $admin = false)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
+        foreach ($chat->getAdmins() as $admin) {
+            if ($admin->getId() === $this->user->getId()) {
+                $admin = true;
+                break;
+            }
+        }
+        if ($admin) {
+            $users = $this->uR->findAll();
+            $temp = [];
+            foreach ($users as $user) {
+                $temp[] = $user->getId();
+            }
+            sort($temp);
+            $members = [];
+            foreach ($chat->getMembers() as $member) {
+                $members[] = $member->getId();
+            }
+            sort($members);
+            $nonMemebers = [];
+            foreach ($temp as $user) {
+                if (!in_array($user, $members)) {
+                    foreach ($users as $usr) {
+                        if ($usr->getId() === $user) {
+                            $nonMemebers[] = [
+                                'id' => $usr->getId(),
+                                'name' => $usr->getName() . ' ' . $usr->getSurname(),
+                                'image' => stream_get_contents($usr->getUserImg())
+                            ];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return $this->json([json_encode($nonMemebers)]);
+        } else {
+            throw new Error('You got no permission to get this', 403);
+        }
+    }
+
+    /**
      * @Route("/chat/{hash}/{member}/delete", name="deleteChatMember", methods={"POST"})
      */
-    public function deleteChatMember(int $hash, int $member, $admin = false)
+    public function deleteChatMember(int $hash, int $member, $admin = false, ParameterBagInterface $pb)
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
@@ -252,12 +301,30 @@ class AppController extends AbstractController
         }
         if ($admin) {
             $member = $this->uR->findOneBy(['id' => $member]);
-            $chat->removeMembers($member);
+            $chat->removeMember($member);
             foreach ($chat->getAdmins() as $admin) {
                 if ($admin->getId() === $member->getId()) {
-                    $chat->removeAdmins($member);
+                    $chat->removeAdmin($member);
                     break;
                 }
+            }
+            if (sizeof($chat->getMembers()) < 2) {
+                foreach ($chat->getMessages() as $m) {
+                    $this->em->remove($m);
+                }
+                $filesystem = new Filesystem();
+
+                foreach ($chat->getChatFiles() as $f) {
+                    $filesystem->remove($pb->get('kernel.project_dir') . '/public/images/chatFiles/' . stream_get_contents($f->getFile()));
+                    $this->em->remove($f);
+                }
+                foreach ($chat->getJoinRequests() as $r) {
+                    $this->em->remove($r);
+                }
+                if ($chat->getImage()) {
+                    $filesystem->remove($pb->get('kernel.project_dir') . '/public/images/chat/' . stream_get_contents($chat->getImage()));
+                }
+                $this->em->remove($chat);
             }
             $this->em->flush();
         }

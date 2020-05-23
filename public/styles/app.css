@@ -519,3 +519,65 @@ object {
   border-radius: 15px;
   text-align: center;
 }
+.members-counter-chat {
+  cursor: pointer;
+}
+.chat-members-display {
+  width: 50%;
+  height: 90vh;
+  margin: auto;
+  padding: 0.35em 0.5em;
+  display: none;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: rgba(248, 248, 248, 1);
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 15px;
+  overflow: auto;
+  z-index: 25;
+  position: absolute;
+  top: 5vh;
+  left: 25%;
+}
+.member-display-elem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 65px;
+  padding: 0 0.5em;
+  width: 100%;
+}
+.member-display-elem img {
+  width: 50px;
+  height: 50px;
+}
+.members-display-name {
+  font-size: 1.3em;
+}
+.delete-member {
+  padding: 0.3em 0.7em;
+  border-radius: 15px;
+  font-size: 1.25em;
+  cursor: pointer;
+  background-color: #fff;
+  color: rgb(236, 89, 89);
+  border: 1px solid rgb(236, 89, 89);
+}
+#chat-requests,
+#add-new-members {
+  cursor: pointer;
+}
+.members-display-close {
+  position: absolute;
+  bottom: 10px;
+  right: 42.5%;
+  width: 15%;
+  padding: 0.5em 0.8em;
+  background-color: rgb(236, 89, 89);
+  color: #fff;
+  font-size: 1.3em;
+  cursor: pointer;
+  border-radius: 15px;
+  text-align: center;
+}
