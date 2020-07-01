@@ -214,27 +214,15 @@ class AppController extends AbstractController
     }
 
     /**
-     * @Route("/chat/{hash}/json/messages", name="messageJSON", methods={"GET"})
+     * @Route("/current-user", name="messageJSON", methods={"GET"})
      */
-    public function messagesJSON(int $hash)
+    public function userJSON()
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
 
-        //Create internal API for getting messages
-        $temp = $this->cR->findOneBy(['chatHash' => $hash]);
-        $output = [];
-        foreach ($temp->getMessages() as $message) {
-            $output[] = [
-                'content' => $message->getContent() ? $message->getContent() : null,
-                'date' => $message->getDate()->format('H:i:s d.m.Y'),
-                'author' => $message->getSender()->getName(),
-                'authorId' => $message->getSender()->getId(),
-                'file' => $message->getFile() ? stream_get_contents($message->getFile()->getFile()) : null
-            ];
-        }
-        unset($temp);
+        //Create internal API for current user
 
-        return $this->json([json_encode($output)]);
+        return $this->json([json_encode(['id' => $this->user->getId(), 'name' => $this->user->getName(), 'img' => $this->user->getUserImg()])]);
     }
 
     /**

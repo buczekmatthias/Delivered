@@ -88,7 +88,7 @@
 				</label>
 				<input type="file" id="messageFile" class="messageFile">
 				<textarea class="message-box" id="messageContent"></textarea>
-				<button class="send-message" id="messageSend">
+				<button class="send-message" id="messageSend" data-id={{app.session.get('user').id}}>
 					Send
 				</button>
 			</div>

@@ -264,7 +264,7 @@ class User
 
     public function getUserImg()
     {
-        return $this->userImg;
+        return $this->userImg ? stream_get_contents($this->userImg) : null;
     }
 
     public function setUserImg($userImg): self
