@@ -81,7 +81,38 @@
 			</div>
 		</div>
 		<div class="messenger">
-			<div class="messages"></div>
+			<div class="messages">
+				{% for message in messages %}
+					{% set who = null %}
+					{% if app.session.get('user').id == message.sender.id %}
+						{% set who = "sent" %}
+					{% else %}
+						{% set who = "received" %}
+					{% endif %}
+					<div class='message-object {{who}}'>
+						<div class='message-author'>
+							{% if who == 'received' %}
+								{% set src = null %}
+								{% if message.sender.userImg %}
+									{% set src = '/images/users' ~ message.sender.userImg %}
+								{% else %}
+									{% set src = "/images/man.png" %}
+								{% endif %}
+								<img src="{{src}}">
+								<p>
+									{{message.sender.Name}}
+								</p>
+							{% endif %}
+						</div>
+						<div class='message-content'>
+							{{message.Content}}
+						</div>
+						<p class='messagae-sent-at'>
+							{{message.Date|date('H:i')}}
+						</p>
+					</div>
+				{% endfor %}
+			</div>
 			<div class="new-msg">
 				<label for="messageFile" class="messageFile-pic">
 					&oplus;
@@ -95,8 +126,6 @@
 		</div>
 	</section>
 {% endblock %}
-
 {% block javascripts %}
-	{{parent()}}
-	<script src="/js/chat.js"></script>
+	{{parent()}}<script src="/js/chat.js"></script>
 {% endblock %}

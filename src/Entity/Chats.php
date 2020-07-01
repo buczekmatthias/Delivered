@@ -245,7 +245,7 @@ class Chats
 
     public function getImage()
     {
-        return $this->image;
+        return $this->image ? stream_get_contents($this->image) : null;
     }
 
     public function setImage($image): self

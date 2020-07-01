@@ -1,9 +1,9 @@
 const socket = new WebSocket(`ws://${window.location.hostname}:8001`);
 let user = null;
-let message = null;
 const sendButton = document.getElementById("messageSend"); //Submit button of messenger form
 const changeName = document.getElementsByClassName("chat-name-change")[0]; //Container where will name change form go
-const messageContainer = document.getElementsByClassName("messages")[0]; //Container where are messages displayed
+const messageBox = document.getElementsByClassName("message-box")[0]; //Messages box
+const messageContainer = document.getElementsByClassName("messages")[0]; //Container of messages
 const file = document.getElementById("messageFile"); //File button
 const chatimg = document.getElementById("chatImage"); //Chat file button
 const hash = document.getElementsByClassName("chat")[0].getAttribute("data-id"); //Chat's hash
@@ -16,15 +16,16 @@ let membersBox = document.getElementsByClassName("delete-member");
 
 socket.onopen = () => {
   console.log("Connected");
+  messageContainer.scrollTop = messageContainer.scrollHeight;
   getUser((err, data) => {
     user = JSON.parse(data);
   });
 };
-
 sendButton.addEventListener("click", () => {
   let date = new Date();
-  message = {
+  let message = {
     id: user["id"],
+    chat: window.location.pathname.split("/").pop(),
     userName: user["name"],
     img: user["img"],
     message: document.getElementById("messageContent").value,
@@ -35,6 +36,7 @@ sendButton.addEventListener("click", () => {
   };
 
   socket.send(JSON.stringify(message));
+  messageSend();
   addMessage(message);
 });
 
@@ -44,10 +46,7 @@ socket.onmessage = (e) => {
 };
 
 function addMessage(message) {
-  //Clear container
-  messageContainer.innerHTML = "";
-
-  //Display all messages
+  //Display new messages
   let messageCont = document.createElement("div");
   messageCont.classList.add("message-object");
   messageCont.classList.add(
@@ -61,7 +60,7 @@ function addMessage(message) {
   author.classList.add("message-author");
   if (!messageCont.classList.contains("sent"))
     author.innerHTML = `<img src="${
-      message["img"] ? message["img"] : "/images/man.png"
+      message["img"] ? `/images/users/${message["img"]}` : "/images/man.png"
     }"><p>${message["userName"]}</p>`;
 
   let sent = document.createElement("p");
@@ -72,9 +71,9 @@ function addMessage(message) {
   messageCont.appendChild(messageBubble);
   messageCont.appendChild(sent);
   messageContainer.appendChild(messageCont);
+  messageContainer.scrollTop = messageContainer.scrollHeight;
 }
 
-/* 
 Array.from(membersBox).forEach((member, index) => {
   member.addEventListener("click", () => {
     let xhr = new XMLHttpRequest();
@@ -91,6 +90,8 @@ Array.from(membersBox).forEach((member, index) => {
     xhr.send();
   });
 });
+
+//file.onchange = (file) => sendFile(file);
 
 membersList.addEventListener("click", () => {
   closeMembers.parentElement.style.display = "flex";
@@ -194,39 +195,31 @@ function nameSet(name) {
 }
 
 function messageSend() {
-  let message = document.getElementById("messageContent");
-  //If message is not null make ajax request to send message and fetch messages
-  if (message) {
-    try {
-      let xhr = new XMLHttpRequest();
-      let fD = new FormData();
-      fD.append("message", message.value);
-      xhr.open("POST", `/chat/${hash}/send`, true);
-      xhr.send(fD);
-      document.getElementById("messageContent").value = "";
-      updateChat(hash);
-    } catch (error) {
-      alert("Error occured. Check console to see error status.");
-      console.log(error);
-    }
-  } else {
-    alert("You need to provide message");
+  //If message is not null make xhr request to send message and fetch messages
+  try {
+    let xhr = new XMLHttpRequest();
+    let fD = new FormData();
+    fD.append("message", messageBox.value);
+    xhr.open("POST", `/chat/${hash}/send-message`, true);
+    xhr.send(fD);
+    messageBox.value = "";
+  } catch (error) {
+    alert("Error occured. Check console to see error status.");
+    console.log(error);
   }
 }
-
-function updateChat(hash) {
-  //Get messages through internal API
-  getJSON(`/chat/${hash}/json/messages`, (err, data) => {
-    if (err) {
-      alert("Error occured. Check console to see error status");
-      console.log(err);
-    } else {
-      //Show taken messages and scroll to last message in chat
-      displayMessages(JSON.parse(data));
-      messageContainer.scrollTop = messageContainer.scrollHeight;
-    }
-  });
-}
+/* function sendFile(file) {
+  try {
+    let xhr = new XMLHttpRequest();
+    let fD = new FormData();
+    fD.append("file", file.files[0]);
+    xhr.open("POST", `/chat/${hash}/send-file`, true);
+    xhr.send(fD);
+  } catch (error) {
+    alert("Error occured. Check console to see error status.");
+    console.log(error);
+  }
+} */
 
 function requests(hash) {
   getJSON(`/chat/${hash}/json/request-list`, (err, data) => {
@@ -319,7 +312,6 @@ function displayList(list) {
   });
   document.body.insertBefore(reqBox, bg);
 }
- */
 
 //XHR request to get data
 function getUser(callback) {

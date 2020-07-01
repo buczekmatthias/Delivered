@@ -138,8 +138,9 @@ class AppController extends AbstractController
             'hash' => $hash,
             'name' => $chat->getChatName(),
             'members' => $members,
-            'image' => $chat->getImage() ? stream_get_contents($chat->getImage()) : null,
-            'admin' => $admin
+            'image' => $chat->getImage(),
+            'admin' => $admin,
+            'messages' => $chat->getMessages()
         ]);
     }
 
@@ -321,43 +322,62 @@ class AppController extends AbstractController
     }
 
     /**
-     * @Route("/chat/{hash}/send", name="sendMessage", methods={"POST"})
+     * @Route("/chat/{hash}/send-message", name="sendMessage", methods={"POST"})
      */
     public function sendMessage(int $hash, Request $request)
     {
         if (!$this->verify) return $this->redirectToRoute('login', []);
-        $date = new \DateTime();
+
         $content = $request->request->get('message');
-        $file = $request->files->get('file');
         $chat = $this->cR->findOneBy(['chatHash' => $hash]);
         $user = $this->uR->findOneBy(['id' => $this->user->getId()]);
 
         $message = new Messages();
-        $message->setDate($date);
-        if ($content) $message->setContent($content);
-        if ($file) {
-            $f = new ChatFiles();
-            $f->setUser($user);
-            $f->setChat($chat);
-            $newName = date('Ymd') . '-' . uniqid() . '.' . $file->guessExtension();
-            try {
-                $file->move(
-                    'images/chatFiles/',
-                    $newName
-                );
-            } catch (FileException $e) {
-                throw new FileException('Error occured while uploading. Error code: %d. Try again!', sprintf($e->getMessage()));
-            }
-            $f->setFile($newName);
-            $this->em->persist($f);
-            $this->em->flush();
-            $message->setFile($f);
-        }
+        $message->setDate(new \DateTime());
+        $message->setContent($content);
         $message->setSender($user);
         $message->setChat($chat);
-        $message->addDisplayed($this->uR->findOneBy(['id' => $this->user->getId()]));
+        $message->addDisplayed($user);
 
         $this->em->persist($message);
+        $this->em->flush();
+
+        return new Response();
+    }
+
+    /**
+     * @Route("/chat/{hash}/send-file", name="sendFile", methods={"POST"})
+     */
+    public function sendFile(int $hash, Request $request)
+    {
+        if (!$this->verify) return $this->redirectToRoute('login', []);
+
+        $file = $request->request->get('file');
+        $chat = $this->cR->findOneBy(['chatHash' => $hash]);
+        $user = $this->uR->findOneBy(['id' => $this->user->getId()]);
+
+        $message = new Messages;
+        $message->setDate(new \DateTime());
+        $message->setSender($user);
+        $message->setChat($chat);
+        $message->addDisplayed($user);
+
+        $f = new ChatFiles();
+        $f->setUser($user);
+        $f->setChat($chat);
+        $newName = date('Ymd') . '-' . uniqid() . '.' . $file->guessExtension();
+        try {
+            $file->move(
+                'images/chatFiles/',
+                $newName
+            );
+        } catch (FileException $e) {
+            throw new FileException('Error occured while uploading. Error code: %d. Try again!', sprintf($e->getMessage()));
+        }
+        $f->setFile($newName);
+        $message->setFile($f);
+
+        $this->em->persist($f);
         $this->em->flush();
 
         return new Response();
