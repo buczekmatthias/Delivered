@@ -5,11 +5,12 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
-class User
+class User implements UserInterface
 {
     /**
      * @ORM\Id()
@@ -19,61 +20,87 @@ class User
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=75)
+     * @ORM\Column(type="string", length=180, unique=true)
      */
-    private $Login;
+    private $login;
 
     /**
-     * @ORM\Column(type="string", length=75)
+     * @ORM\Column(type="json")
      */
-    private $Password;
+    private $roles = [];
+
+    /**
+     * @var string The hashed password
+     * @ORM\Column(type="string")
+     */
+    private $password;
 
     /**
      * @ORM\Column(type="string", length=300)
      */
-    private $Email;
+    private $email;
 
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="array")
      */
-    private $Name;
+    private $name = [];
 
     /**
-     * @ORM\Column(type="string", length=250)
+     * @ORM\Column(type="string", length=300, nullable=true)
      */
-    private $Surname;
+    private $city;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Messages", mappedBy="sender")
+     * @ORM\Column(type="date", nullable=true)
      */
-    private $messages;
+    private $birthdayDate;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\Chats", mappedBy="members")
+     * @ORM\Column(type="datetime")
      */
-    private $chats;
+    private $joinedAt;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\ChatFiles", mappedBy="user")
+     * @ORM\ManyToOne(targetEntity=User::class)
      */
-    private $chatFiles;
+    private $friends;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\JoinRequests", mappedBy="user")
+     * @ORM\OneToMany(targetEntity=Invitations::class, mappedBy="sender")
+     */
+    private $sentInvitation;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Invitations::class, mappedBy="toWho")
+     */
+    private $receivedInvitations;
+
+    /**
+     * @ORM\Column(type="string", length=500, nullable=true)
+     */
+    private $image = "/images/users/avatar.png";
+
+    /**
+     * @ORM\OneToMany(targetEntity=Requests::class, mappedBy="byWho")
      */
     private $joinRequests;
 
     /**
-     * @ORM\Column(type="blob", nullable=true)
+     * @ORM\Column(type="datetime", nullable=true)
      */
-    private $userImg;
+    private $lastActivity;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Notifications::class, mappedBy="toWho")
+     */
+    private $notifications;
 
     public function __construct()
     {
-        $this->messages = new ArrayCollection();
-        $this->chats = new ArrayCollection();
-        $this->chatFiles = new ArrayCollection();
+        $this->sentInvitation = new ArrayCollection();
+        $this->receivedInvitations = new ArrayCollection();
         $this->joinRequests = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -83,89 +110,173 @@ class User
 
     public function getLogin(): ?string
     {
-        return $this->Login;
+        return $this->login;
     }
 
-    public function setLogin(string $Login): self
+    public function setLogin(string $login): self
     {
-        $this->Login = $Login;
+        $this->login = $login;
 
         return $this;
     }
 
-    public function getPassword(): ?string
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUsername(): string
     {
-        return $this->Password;
+        return (string) $this->login;
     }
 
-    public function setPassword(string $Password): self
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
     {
-        $this->Password = $Password;
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
 
         return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getPassword(): string
+    {
+        return (string) $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getSalt()
+    {
+        // not needed when using the "bcrypt" algorithm in security.yaml
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 
     public function getEmail(): ?string
     {
-        return $this->Email;
+        return $this->email;
     }
 
-    public function setEmail(string $Email): self
+    public function setEmail(string $email): self
     {
-        $this->Email = $Email;
+        $this->email = $email;
 
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): ?array
     {
-        return $this->Name;
+        return $this->name;
     }
 
-    public function setName(string $Name): self
+    public function setName(array $name): self
     {
-        $this->Name = $Name;
+        $this->name = $name;
 
         return $this;
     }
 
-    public function getSurname(): ?string
+    public function getCity(): ?string
     {
-        return $this->Surname;
+        return $this->city;
     }
 
-    public function setSurname(string $Surname): self
+    public function setCity(?string $city): self
     {
-        $this->Surname = $Surname;
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getBirthdayDate(): ?\DateTimeInterface
+    {
+        return $this->birthdayDate;
+    }
+
+    public function setBirthdayDate(?\DateTimeInterface $birthdayDate): self
+    {
+        $this->birthdayDate = $birthdayDate;
+
+        return $this;
+    }
+
+    public function getJoinedAt(): ?\DateTimeInterface
+    {
+        return $this->joinedAt;
+    }
+
+    public function setJoinedAt(\DateTimeInterface $joinedAt): self
+    {
+        $this->joinedAt = $joinedAt;
+
+        return $this;
+    }
+
+    public function getFriends(): ?User
+    {
+        return $this->friends;
+    }
+
+    public function setFriends(?User $friends): self
+    {
+        $this->friends = $friends;
 
         return $this;
     }
 
     /**
-     * @return Collection|Messages[]
+     * @return Collection|Invitations[]
      */
-    public function getMessages(): Collection
+    public function getSentInvitation(): Collection
     {
-        return $this->messages;
+        return $this->sentInvitation;
     }
 
-    public function addMessage(Messages $message): self
+    public function addSentInvitation(Invitations $sentInvitation): self
     {
-        if (!$this->messages->contains($message)) {
-            $this->messages[] = $message;
-            $message->setSender($this);
+        if (!$this->sentInvitation->contains($sentInvitation)) {
+            $this->sentInvitation[] = $sentInvitation;
+            $sentInvitation->setSender($this);
         }
 
         return $this;
     }
 
-    public function removeMessage(Messages $message): self
+    public function removeSentInvitation(Invitations $sentInvitation): self
     {
-        if ($this->messages->contains($message)) {
-            $this->messages->removeElement($message);
+        if ($this->sentInvitation->removeElement($sentInvitation)) {
             // set the owning side to null (unless already changed)
-            if ($message->getSender() === $this) {
-                $message->setSender(null);
+            if ($sentInvitation->getSender() === $this) {
+                $sentInvitation->setSender(null);
             }
         }
 
@@ -173,104 +284,136 @@ class User
     }
 
     /**
-     * @return Collection|Chats[]
+     * @return Collection|Invitations[]
      */
-    public function getChats(): Collection
+    public function getReceivedInvitations(): Collection
     {
-        return $this->chats;
+        return $this->receivedInvitations;
     }
 
-    public function addChat(Chats $chat): self
+    public function addReceivedInvitation(Invitations $receivedInvitation): self
     {
-        if (!$this->chats->contains($chat)) {
-            $this->chats[] = $chat;
-            $chat->addMember($this);
+        if (!$this->receivedInvitations->contains($receivedInvitation)) {
+            $this->receivedInvitations[] = $receivedInvitation;
+            $receivedInvitation->setToWho($this);
         }
 
         return $this;
     }
 
-    public function removeChat(Chats $chat): self
+    public function removeReceivedInvitation(Invitations $receivedInvitation): self
     {
-        if ($this->chats->contains($chat)) {
-            $this->chats->removeElement($chat);
-            $chat->removeMember($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|ChatFiles[]
-     */
-    public function getChatFiles(): Collection
-    {
-        return $this->chatFiles;
-    }
-
-    public function addChatFile(ChatFiles $chatFile): self
-    {
-        if (!$this->chatFiles->contains($chatFile)) {
-            $this->chatFiles[] = $chatFile;
-            $chatFile->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeChatFile(ChatFiles $chatFile): self
-    {
-        if ($this->chatFiles->contains($chatFile)) {
-            $this->chatFiles->removeElement($chatFile);
+        if ($this->receivedInvitations->removeElement($receivedInvitation)) {
             // set the owning side to null (unless already changed)
-            if ($chatFile->getUser() === $this) {
-                $chatFile->setUser(null);
+            if ($receivedInvitation->getToWho() === $this) {
+                $receivedInvitation->setToWho(null);
             }
         }
 
         return $this;
     }
 
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): self
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
     /**
-     * @return Collection|JoinRequests[]
+     * @return Collection|Requests[]
      */
     public function getJoinRequests(): Collection
     {
         return $this->joinRequests;
     }
 
-    public function addJoinRequest(JoinRequests $joinRequest): self
+    public function addJoinRequest(Requests $joinRequest): self
     {
         if (!$this->joinRequests->contains($joinRequest)) {
             $this->joinRequests[] = $joinRequest;
-            $joinRequest->setUser($this);
+            $joinRequest->setByWho($this);
         }
 
         return $this;
     }
 
-    public function removeJoinRequest(JoinRequests $joinRequest): self
+    public function removeJoinRequest(Requests $joinRequest): self
     {
-        if ($this->joinRequests->contains($joinRequest)) {
-            $this->joinRequests->removeElement($joinRequest);
+        if ($this->joinRequests->removeElement($joinRequest)) {
             // set the owning side to null (unless already changed)
-            if ($joinRequest->getUser() === $this) {
-                $joinRequest->setUser(null);
+            if ($joinRequest->getByWho() === $this) {
+                $joinRequest->setByWho(null);
             }
         }
 
         return $this;
     }
 
-    public function getUserImg()
+    public function getLastActivity(): ?\DateTimeInterface
     {
-        return $this->userImg ? stream_get_contents($this->userImg) : null;
+        return $this->lastActivity;
     }
 
-    public function setUserImg($userImg): self
+    public function setLastActivity(?\DateTimeInterface $lastActivity): self
     {
-        $this->userImg = $userImg;
+        $this->lastActivity = $lastActivity;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|Notifications[]
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(Notifications $notification): self
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications[] = $notification;
+            $notification->setToWho($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotification(Notifications $notification): self
+    {
+        if ($this->notifications->removeElement($notification)) {
+            // set the owning side to null (unless already changed)
+            if ($notification->getToWho() === $this) {
+                $notification->setToWho(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isActive()
+    {
+        return ($this->getLastActivity() > new \DateTime('5 minutes ago'));
+    }
+
+    public function getFullName(): ?string
+    {
+        $out = '';
+
+        $out .= $this->name['first'];
+
+        if ($this->name['mid']) {
+            $out .= " " . $this->name['mid'];
+        }
+
+        $out .= " " . $this->name['last'];
+
+        return $out;
     }
 }

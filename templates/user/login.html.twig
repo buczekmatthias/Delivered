@@ -1,20 +1,53 @@
-{% extends 'base.html.twig' %}
+{% extends "base.html.twig" %}
 
 {% block title %}
 	Login
 {% endblock %}
 
 {% block stylesheets %}
-	<link href="/styles/user.css" rel="stylesheet">
+	{{parent()}}
+	<link rel="stylesheet" href="/styles/user/login.css">
 {% endblock %}
 
 {% block body %}
-	{{form_start(login, {'attr': {'class': 'loginForm'}})}}
-	{{form_row(login.Login)}}
-	{{form_row(login.Password)}}
-	{{form_widget(login.Submit)}}
-	<a href="{{path('register')}}">
-		Create account
-	</a>
-	{{form_end(login)}}
+	<form action="{{ path('login') }}" method="POST">
+		<p class="form-header">Sign in</p>
+		<div class="inpBox">
+			<input type="text" id="username" name="login" value="{{username}}" autofocus required/>
+			<label for="username">
+				<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+					<path d="M256 288c79.5 0 144-64.5 144-144S335.5 0 256 0 112 64.5 112 144s64.5 144 144 144zm128 32h-55.1c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16H128C57.3 320 0 377.3 0 448v16c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48v-16c0-70.7-57.3-128-128-128z"></path>
+				</svg>
+			</label>
+		</div>
+		<div class="inpBox">
+			<input type="password" id="password" class="pass" name="password" value="" required/>
+			<label for="password">
+				<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+					<path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
+				</svg>
+			</label>
+			<svg class="showHide" stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+				<path d="M12,9c-1.642,0-3,1.359-3,3c0,1.642,1.358,3,3,3c1.641,0,3-1.358,3-3C15,10.359,13.641,9,12,9z"></path>
+				<path d="M12,5c-7.633,0-9.927,6.617-9.948,6.684L1.946,12l0.105,0.316C2.073,12.383,4.367,19,12,19s9.927-6.617,9.948-6.684 L22.054,12l-0.105-0.316C21.927,11.617,19.633,5,12,5z M12,17c-5.351,0-7.424-3.846-7.926-5C4.578,10.842,6.652,7,12,7 c5.351,0,7.424,3.846,7.926,5C19.422,13.158,17.348,17,12,17z"></path>
+			</svg>
+		</div>
+		<div class="additionalContent">
+			<label>
+				<input type="checkbox" name="_remember_me">
+				Remember me
+			</label>
+			<a href="">Forgot password?</a>
+		</div>
+		<input type="hidden" name="csrf" value="{{csrf_token('authenticate')}}">
+		<button id="submit-login" class="login-btn" type="submit">Sign in</button>
+		<a href="" class="register-link">Become member now</a>
+		{% if error %}
+			<div class="alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+		{% endif %}
+	</form>
+{% endblock %}
+
+{% block javascripts %}
+	<script src="/js/forms.js"></script>
 {% endblock %}

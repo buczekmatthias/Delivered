@@ -1,0 +1,68 @@
+body {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.app-navigation {
+  width: 12vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 0 1.35rem;
+  background: #c31432;
+  background: -webkit-linear-gradient(to bottom, #240b36, #c31432);
+  background: linear-gradient(to bottom, #240b36, #c31432);
+}
+
+.app-navigation .links {
+  width: 100%;
+}
+.app-navigation a {
+  color: #fff;
+  display: flex;
+  align-items: center;
+}
+.app-navigation a:not(.active-link):hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.app-navigation a svg {
+  margin-right: 0.75rem;
+}
+
+.app-label {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.app-navigation a {
+  height: 4rem;
+  width: 100%;
+  padding: 0 2rem;
+}
+.app-navigation > a:last-of-type {
+  height: 3rem;
+}
+.app-navigation .links a:nth-child(even) {
+  margin: 1.35rem 0;
+}
+
+.active-link {
+  background-color: #fff;
+  color: #240b36 !important;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+.active-link svg {
+  fill: #240b36;
+  transform: scale(1.2);
+}
+
+.app-content {
+  width: 88vw;
+  height: 100vh;
+}

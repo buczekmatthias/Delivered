@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class WebsocketServerCommand extends Command
 {
-    protected static $defaultName = "run:websocket-server";
+    protected static $defaultName = "run:websocket";
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {

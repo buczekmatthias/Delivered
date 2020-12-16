@@ -4,8 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Chats;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method Chats|null find($id, $lockMode = null, $lockVersion = null)
@@ -15,10 +14,20 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  */
 class ChatsRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry, SessionInterface $session)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Chats::class);
-        $this->user = $session->get('user');
+    }
+
+    public function getUsersChatsByActivity(object $current)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere("c.members LIKE :current")
+            ->setParameter(":current", "%" . serialize($current) . "%")
+            ->leftJoin("c.messages", "m")
+            ->orderBy("m.sendAt", "DESC")
+            ->getQuery()
+            ->getResult();
     }
 
     // /**
@@ -27,26 +36,26 @@ class ChatsRepository extends ServiceEntityRepository
     /*
     public function findByExampleField($value)
     {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+    return $this->createQueryBuilder('c')
+    ->andWhere('c.exampleField = :val')
+    ->setParameter('val', $value)
+    ->orderBy('c.id', 'ASC')
+    ->setMaxResults(10)
+    ->getQuery()
+    ->getResult()
+    ;
     }
-    */
+     */
 
     /*
-    public function findOneBySomeField($value): ?Chats
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
+public function findOneBySomeField($value): ?Chats
+{
+return $this->createQueryBuilder('c')
+->andWhere('c.exampleField = :val')
+->setParameter('val', $value)
+->getQuery()
+->getOneOrNullResult()
+;
+}
+ */
 }

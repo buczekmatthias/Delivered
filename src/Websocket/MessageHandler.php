@@ -26,7 +26,7 @@ class MessageHandler implements MessageComponentInterface
         foreach ($this->conn as $conn) {
             if ($conn === $from) continue;
 
-            $conn->send([$from, $msg]);
+            $conn->send($msg);
         }
     }
 

@@ -4,7 +4,10 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
+use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -12,21 +15,50 @@ use Doctrine\Common\Persistence\ManagerRegistry;
  * @method User[]    findAll()
  * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class UserRepository extends ServiceEntityRepository
+class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
     }
 
-    public function registerVerify($data)
+    /**
+     * Used to upgrade (rehash) the user's password automatically over time.
+     */
+    public function upgradePassword(UserInterface $user, string $newEncodedPassword): void
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.Login = :login OR u.Email = :email')
-            ->setParameter('login', $data[0])
-            ->setParameter('email', $data[1])
+        if (!$user instanceof User) {
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
+        }
+
+        $user->setPassword($newEncodedPassword);
+        $this->_em->persist($user);
+        $this->_em->flush();
+    }
+
+    public function getUnfriendedUsers(string $current, array $friends)
+    {
+        $freeToAdd = [];
+
+        $all = $this->createQueryBuilder('u')
+            ->andWhere('u.login != :current')
+            ->setParameter(":current", $current)
             ->getQuery()
             ->getResult();
+
+        foreach ($all as $user) {
+            if (!in_array($user->getLogin(), $friends)) {
+                $freeToAdd[] = $user;
+
+                if (sizeof($freeToAdd) === 5) {
+                    break;
+                }
+
+            }
+
+        }
+
+        return $freeToAdd;
     }
 
     // /**
@@ -35,26 +67,26 @@ class UserRepository extends ServiceEntityRepository
     /*
     public function findByExampleField($value)
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+    return $this->createQueryBuilder('u')
+    ->andWhere('u.exampleField = :val')
+    ->setParameter('val', $value)
+    ->orderBy('u.id', 'ASC')
+    ->setMaxResults(10)
+    ->getQuery()
+    ->getResult()
+    ;
     }
-    */
+     */
 
     /*
-    public function findOneBySomeField($value): ?User
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
+public function findOneBySomeField($value): ?User
+{
+return $this->createQueryBuilder('u')
+->andWhere('u.exampleField = :val')
+->setParameter('val', $value)
+->getQuery()
+->getOneOrNullResult()
+;
+}
+ */
 }

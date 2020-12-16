@@ -1,196 +1,146 @@
-{% extends 'base.html.twig' %}
+{% extends 'app/_nav.html.twig' %}
 
-{% block title %}
-	Delivered
+{% block addon %}
+	{{app.request.attributes.get('_route')|capitalize}}
 {% endblock %}
 
 {% block stylesheets %}
-	<link href="/styles/app.css" rel="stylesheet">
+	{{parent()}}
+	<link rel="stylesheet" href="styles/app/homepage.css">
 {% endblock %}
 
-{% block body %}
-	<nav>
-		<div class="logo">
-			<img src="/images/logo.png">
-			<p>
-				Delivered
-			</p>
-		</div>
-		<div class="user-nav-elem" data-id="{{app.session.get('user').id}}">
-			{% if app.session.get('user').userImg is not null %}
-				<label for="userImg" class="user-img-set">
-					<img src="{{'/images/users/' ~ app.session.get('user').userImg}}">
-				</label>
-			{% else %}
-				<label for="userImg" class="user-img-set">
-					<img src="/images/upload.png">
-				</label>
+{% block content %}
+	<div class="left-side-home">
+		<p class="chat-count">
+			Your chats
+			{% if chats %}
+				({{chats|length}})
 			{% endif %}
-			<input type="file" id="userImg">
-			<p>
-				{{app.session.get('user').Name}}
-				{{app.session.get('user').Surname}}
-			</p>
-		</div>
+		</p>
+		{% if chats %}
 
-		<a href="{{path('logout')}}">
-			Logout
-		</a>
-	</nav>
-
-	{% block content %}
-		<section class="chats">
-			<div class="chats-header">
-				<p class="chats-header-title">
-					Your chats
-				</p>
-				<a href="{{path('chatCreate')}}">
-					Start new chat
-				</a>
+			{% else %}
+				<div class="no-chats">
+					<p class="no-chat-text">You are not in any chat</p>
+					<a href="" class="no-chat-create">Create your chat</a>
+					<a href="" class="no-chat-join">or join existing one</a>
+				</div>
+		{% endif %}
+	</div>
+	<div class="right-side-home">
+		<p class="hello-user">
+			Hello
+			{{app.user.name.first}}!
+		</p>
+		<div class="invitations">
+			<div class="invitations-btn">
+				<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" d="M11 14s1 0 1-1-1-4-6-4-6 3-6 4 1 1 1 1h10zm-9.995-.944v-.002.002zM1.022 13h9.956a.274.274 0 00.014-.002l.008-.002c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664a1.05 1.05 0 00.022.004zm9.974.056v-.002.002zM6 7a2 2 0 100-4 2 2 0 000 4zm3-2a3 3 0 11-6 0 3 3 0 016 0zm4.5 0a.5.5 0 01.5.5v2a.5.5 0 01-.5.5h-2a.5.5 0 010-1H13V5.5a.5.5 0 01.5-.5z" clip-rule="evenodd"></path>
+					<path fill-rule="evenodd" d="M13 7.5a.5.5 0 01.5-.5h2a.5.5 0 010 1H14v1.5a.5.5 0 01-1 0v-2z" clip-rule="evenodd"></path>
+				</svg>
 			</div>
-
-			<div class="chats-content">
-				{% for chat in chats %}
-					<a href="{{path('chat', {'hash': chat.chatHash})}}">
-						<p class="chat-name">
-							{% if chat.chatName is null %}
-								{% set name = '' %}
-								{% if chat.members|length > 2 %}
-									{% set temp = 0 %}
-									{% if chat.members|length > 4 %}
-										{% for user in chat.members|filter(v => v.id != app.session.get('user').id)|slice(0, 2) %}
-											{% set name = name ~ user.Name %}
-											{% if temp == 0 %}
-												{% set name = name ~ ', ' %}
-											{% endif %}
-											{% if temp == 1 %}
-												{% set name = name ~ ' and ' ~ (chat.members|length - 3) ~ ' others' %}
-											{% endif %}
-											{% set temp = temp + 1 %}
-										{% endfor %}
-									{% else %}
-										{% if chat.members|length == 3 %}
-											{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
-												{% set name = name ~ user.Name %}
-												{% if temp == 0 %}
-													{% set name = name ~ ' and ' %}
-												{% endif %}
-												{% set temp = temp + 1 %}
-											{% endfor %}
-										{% else %}
-											{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
-												{% set name = name ~ user.Name %}
-												{% if temp == 0 %}
-													{% set name = name ~ ', ' %}
-												{% endif %}
-												{% if temp == 1 %}
-													{% set name = name ~ ' and ' %}
-												{% endif %}
-												{% set temp = temp + 1 %}
-											{% endfor %}
-										{% endif %}
-									{% endif %}
-								{% else %}
-									{% for user in chat.members|filter(v => v.id != app.session.get('user').id) %}
-										{% set name = user.Name ~ ' ' ~ user.Surname %}
-									{% endfor %}
-								{% endif %}
-								{{name}}
-							{% else %}
-								{{chat.chatName}}
-							{% endif %}
-						</p>
-						<p class="last-message-time">
-							{% if chat.messages|length > 0 %}
-								{% set time = '' %}
-								{% set diff = date('now').diff(chat.messages|reverse|slice(0,1).0.Date) %}
-								{% if diff.s < 60 %}
-									{% set time = 'Just now' %}
-								{% endif %}
-								{% if diff.i > 0 %}
-									{% if diff.i == 1 %}
-										{% set time = '1 minute ago' %}
-									{% else %}
-										{% set time = diff.i ~ ' minutes ago' %}
-									{% endif %}
-								{% endif %}
-								{% if diff.h > 0 %}
-									{% if diff.h == 1 %}
-										{% set time = '1 hour ago' %}
-									{% else %}
-										{% set time = diff.h ~ ' hours ago' %}
-									{% endif %}
-								{% endif %}
-								{% if diff.d > 0 %}
-									{% if diff.d == 1 %}
-										{% set time = '1 day ago' %}
-									{% endif %}
-									{% if diff.d < 7 %}
-										{% set time = diff.d ~ ' days ago' %}
-									{% endif %}
-									{% if diff.d > 6%}
-										{% set time = diff.d is divisible by(7) ~ ' weeks ago' %}
-									{% endif %}
-								{% endif %}
-								{% if diff.m > 0 %}
-									{% if diff.m == 1 %}
-										{% set time = '1 month ago' %}
-									{% else %}
-										{% set time = diff.m ~ ' months ago' %}
-									{% endif %}
-								{% endif %}
-								{% if diff.y > 0 %}
-									{% if diff.y == 1 %}
-										{% set time = '1 year ago' %}
-									{% else %}
-										{% set time = diff.y ~ ' years ago' %}
-									{% endif %}
-								{% endif %}
-								{{time}}
-							{% endif %}
-						</p>
-						<p class="last-message">
-							{% if chat.messages|length > 0 %}
-								{% if chat.messages|reverse|slice(0,1).0.Content is not null %}
-									{{chat.messages|reverse|slice(0,1).0.Content}}
-								{% else %}
-									{{chat.messages|reverse|slice(0,1).0.sender.Name}}
-									sent a file
-								{% endif %}
-							{% else %}
-								Chat is so quiet. Tap to begin the talk...
-							{% endif %}
-						</p>
-						{% set unread = 0 %}
-						{% for message in chat.messages %}
-							{% set temp = true %}
-							{% set isIn = 0 %}
-							{% for user in message.displayed %}
-								{% if (isIn == 0) and (user.id != app.session.get('user').id) and (loop.last) %}
-									{% set temp = false %}
-								{% endif %}
-								{% if user.id == app.session.get('user').id %}
-									{% set isIn = 1 %}
-								{% endif %}
-							{% endfor %}
-							{% if temp == false %}
-								{% set unread = unread + 1 %}
-							{% endif %}
-						{% endfor %}
-						{% if unread > 0 %}
-							<p class="unread-messages">
-								<span>
-									{{unread}}
-								</span>
-							</p>
-						{% endif %}
-					</a>
+			<div class="invitations-list">
+				<div class="invitations-menu">
+					<span class="view-menu">Received</span>
+					<span>Sent</span>
+				</div>
+				<div class="received-invitations view-list">
+					{% for inv in app.user.receivedInvitations %}
+						<div {% if inv.isNew %} class="invitation-box no-seen" {% else %} class="invitation-box" {% endif %}>
+							<div class="invitation-sender">
+								<img src="{{inv.sender.image}}" alt="Profile pic">
+								<p class="sender-name">{{inv.sender.getFullName}}</p>
+								<div class="inv-actions">
+									<span class="inv-accept">Accept</span>
+									<span class="inv-refuse">Delete</span>
+								</div>
+							</div>
+						</div>
+					{% else %}
+						<p class="no-rec-inv">No one wants to join your friend list</p>
+					{% endfor %}
+				</div>
+				<div class="sent-invitations">
+					{% for inv in app.user.sentInvitation %}
+						<div class="invitation-box">
+							<div class="invitation-receiver">
+								<img src="{{inv.toWho.image}}" alt="Profile pic">
+								<p class="receiver-name">{{inv.toWho.getFullName}}</p>
+								<span class="inv-cancel">Cancel</span>
+							</div>
+						</div>
+					{% else %}
+						<p class="no-sent-inv">You didn't send any friends requests</p>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+		<div class="notifications">
+			<div class="notifications-btn">
+				<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+					<path d="M8 16a2 2 0 002-2H6a2 2 0 002 2z"></path>
+					<path fill-rule="evenodd" d="M8 1.918l-.797.161A4.002 4.002 0 004 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 00-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 111.99 0A5.002 5.002 0 0113 6c0 .88.32 4.2 1.22 6z" clip-rule="evenodd"></path>
+				</svg>
+			</div>
+			<div class="notifications-list">
+				{% for noti in app.user.notifications %}
+					<div class="notification">
+						<p class="content">{{noti.content|raw}}</p>
+						<p class="date">{{noti.receivedAt|date("d-m-Y H:i")}}</p>
+					</div>
+				{% else %}
+					<p class="no-notif">You have no notifications</p>
 				{% endfor %}
 			</div>
-		</section>
-	{% endblock %}
+		</div>
+		<div class="active-friends">
+			<p class="active-label">
+				Your active friends
+				{% if app.user.friends|length > 0 %}
+					({{app.user.friends|length}})
+				{% endif %}
+			</p>
+			{% if app.user.friends|length < 1 %}
+				<p class="no-friends">
+					<span>You have no friends on your list</span>
+					<a href="">Go and find them</a>
+				</p>
+			{% else %}
+				{% set active = 0 %}
+				{% for friend in random(app.user.friends)|slice(0,5) %}
+					{% if friend.isActive %}
+						<div class="active-friend">
+							<img src="{{friend.image}}" alt="Profile pic">
+							<p class="friend-name">{{friend.getFullName}}</p>
+						</div>
+						{% set active = active + 1 %}
+					{% endif %}
+				{% endfor %}
+				{% if loop.last and active == 0 %}
+					<p class="no-active">Non of your friends is active</p>
+				{% endif %}
+			{% endif %}
+		</div>
+		<div class="free-to-add">
+			<p class="add-label">People you may know</p>
+			{% for user in newToAdd %}
+				<div class="user-to-add">
+					<img src="{{user.image}}" alt="Profile pic">
+					<p class="user-name">{{user.getFullName}}</p>
+					<div class="request-user" data-user-id="{{user.id}}">
+						<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+							<path fill-rule="evenodd" d="M11 14s1 0 1-1-1-4-6-4-6 3-6 4 1 1 1 1h10zm-9.995-.944v-.002.002zM1.022 13h9.956a.274.274 0 00.014-.002l.008-.002c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664a1.05 1.05 0 00.022.004zm9.974.056v-.002.002zM6 7a2 2 0 100-4 2 2 0 000 4zm3-2a3 3 0 11-6 0 3 3 0 016 0zm4.5 0a.5.5 0 01.5.5v2a.5.5 0 01-.5.5h-2a.5.5 0 010-1H13V5.5a.5.5 0 01.5-.5z" clip-rule="evenodd"></path>
+							<path fill-rule="evenodd" d="M13 7.5a.5.5 0 01.5-.5h2a.5.5 0 010 1H14v1.5a.5.5 0 01-1 0v-2z" clip-rule="evenodd"></path>
+						</svg>
+					</div>
+				</div>
+			{% else %}
+				<p class="no-new-possibilities">Woah! Seems like you are friend of everyone here</p>
+			{% endfor %}
+		</div>
+	</div>
 {% endblock %}
 
 {% block javascripts %}
-	<script src="/js/index.js"></script>
+	<script src="/js/home.js"></script>
 {% endblock %}

@@ -5,19 +5,12 @@
 		<title>
 			{% block title %}{% endblock %}
 		</title>
-		<style>
-			*
-			{margin:0;padding:0;box-sizing:border-box}
-			html
-			{height:100%;width:100%}
-		</style>
-		{% block headJS %}{% endblock %}
-		{% block stylesheets %}{% endblock %}
-		<link href="/styles/alerts.css" rel="stylesheet">
-		<link href="/images/favicon.ico" rel="shortcut icon">
+		<style></style>
+		{% block stylesheets %}
+			<link rel="stylesheet" href="/styles/app.css">
+		{% endblock %}
 	</head>
 	<body>
-		{% include "alerts.html.twig" %}
 		{% block body %}{% endblock %}
 		{% block javascripts %}{% endblock %}
 	</body>
