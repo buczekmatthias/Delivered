@@ -1,0 +1,56 @@
+{% extends "app/_nav.html.twig" %}
+
+{% block addon %}
+	Profile
+{% endblock %}
+
+{% block stylesheets %}
+	{{parent()}}
+	<link rel="stylesheet" href="/styles/user/profile.css">
+{% endblock %}
+
+{% block content %}
+	<div class="side-profile">
+		<img src="{{app.user.image}}" alt="Profile picture" class="profile-image" height="250">
+		<p class="name-username">
+			<span class="user-name">
+				{{app.user.name.first}}
+				{{app.user.name.mid}}
+				{{app.user.name.last}}
+			</span>
+			<span class="user-username">@{{app.user.login}}</span>
+		</p>
+		<p class="user-role">
+			<span class="elem-label">Role</span>
+			<span class="elem-value">{{app.user.roles|reverse.0|trim("ROLE_")|lower|capitalize}}</span>
+		</p>
+		<p class="user-city">
+			<span class="elem-label">City</span>
+			<span class="elem-value">{{app.user.city}}</span>
+		</p>
+		<p class="user-email">
+			<span class="elem-label">E-mail</span>
+			<span class="elem-value">{{app.user.email}}</span>
+		</p>
+		<p class="user-friends">
+			<span class="elem-label">Friends</span>
+			<span class="elem-value">{{app.user.friends|length}}</span>
+		</p>
+		<p class="user-birthday">
+			<span class="elem-label">Birthday</span>
+			<span class="elem-value">{{app.user.birthdayDate|date("d/m/Y")}}</span>
+		</p>
+		<p class="user-joindate">
+			<span class="elem-label">Join date</span>
+			<span class="elem-value">{{app.user.joinedAt|date("d/m/Y H:i")}}</span>
+		</p>
+	</div>
+	<div class="user-content">
+		<div class="content-nav">
+			<span class="friends current">Friends</span>
+			<span class="chats">Chats</span>
+			<span class="sent-invitations">Sent invitations</span>
+			<span class="receiver-invitations">Received invitations</span>
+		</div>
+	</div>
+{% endblock %}

@@ -20,10 +20,18 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/u/logout", name="logout")
+     * @Route("/u/logout", name="logout", methods={"GET"})
      */
     public function logout()
     {
         return $this->redirectToRoute('login', []);
+    }
+
+    /**
+     * @Route("/u/profile", name="profile", methods={"GET"})
+     */
+    public function profile()
+    {
+        return $this->render('user/profile.html.twig', []);
     }
 }

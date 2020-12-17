@@ -1,0 +1,50 @@
+.app-content {
+  padding: 1.35rem 3rem;
+  display: flex;
+}
+
+.side-profile > p {
+  display: flex;
+  flex-direction: column;
+  margin: 0.35rem 0 1.15rem;
+}
+
+.user-name {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.user-username,
+.elem-label {
+  color: rgb(91, 91, 91);
+  font-size: 0.8rem;
+}
+
+.elem-value {
+  font-size: 1.15rem;
+  margin-top: 0.15rem;
+}
+
+.user-content {
+  padding: 0 2rem;
+}
+.content-nav {
+  display: flex;
+  align-items: baseline;
+}
+.content-nav span {
+  color: #c3143187;
+  cursor: pointer;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+}
+.content-nav span:nth-child(even) {
+  margin: 0 1.5rem;
+}
+
+.content-nav span.current {
+  font-size: 1.35rem;
+  color: #c31432;
+  font-weight: 600;
+  cursor: default;
+}

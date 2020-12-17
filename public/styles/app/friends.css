@@ -1,0 +1,46 @@
+.app-content {
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.friends-label {
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+.find-friends-btn {
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+  font-size: 1.05rem;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+  background: #c31432;
+  background: -webkit-linear-gradient(to bottom right, #240b36, #c31432);
+  background: linear-gradient(to bottom right, #240b36, #c31432);
+}
+.find-friends-btn svg {
+  fill: #fff;
+  margin-right: 0.75rem;
+  transform: scale(1.5);
+}
+
+.no-friends {
+  display: flex;
+  flex-direction: column;
+}
+.no-friends span {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.35rem;
+}
+.no-friends a {
+  font-size: 2rem;
+  color: #c31432;
+}

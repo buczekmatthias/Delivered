@@ -35,4 +35,22 @@ class AppController extends AbstractController
             'chats' => $this->cr->getUsersChatsByActivity($this->getUser()),
         ]);
     }
+
+    /**
+     * @Route("/chats", name="chats", methods={"GET"})
+     */
+    public function chats()
+    {
+        return $this->render('app/chats.html.twig', [
+            'chats' => $this->cr->getUsersChatsByActivity($this->getUser()),
+        ]);
+    }
+
+    /**
+     * @Route("/friends", name="friends", methods={"GET"})
+     */
+    public function friends()
+    {
+        return $this->render('app/friends.html.twig', []);
+    }
 }

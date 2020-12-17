@@ -1,0 +1,64 @@
+.app-content {
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-menu {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+.chats-label {
+  margin-right: auto;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.create-chat-btn {
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+  font-size: 1.05rem;
+  border-radius: 8px;
+  border: none;
+  margin-right: 1rem;
+  color: #fff;
+  background: #c31432;
+  background: -webkit-linear-gradient(to bottom right, #240b36, #c31432);
+  background: linear-gradient(to bottom right, #240b36, #c31432);
+}
+.create-chat-btn svg {
+  fill: #fff;
+  margin-right: 0.75rem;
+  transform: scale(1.75);
+}
+.find-chats-btn {
+  display: flex;
+  align-items: center;
+  padding: calc(1rem - 5px) 2rem;
+  font-size: 1.05rem;
+  border-radius: 8px;
+  border: none;
+  margin-right: 1rem;
+  background-color: #fff;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-text-fill-color: transparent;
+  background-image: linear-gradient(to bottom right, #240b36 25%, #c31432 75%);
+  border: 5px solid #c31432;
+  border-image-source: linear-gradient(to top left, #240b36 25%, #c31432 75%);
+  border-image-slice: 1;
+}
+.find-chats-btn svg {
+  fill: #c31432;
+  margin-right: 0.75rem;
+  transform: scale(1.25);
+}
+
+.no-chats {
+  margin-top: 0.75rem;
+  font-size: 2.5rem;
+}

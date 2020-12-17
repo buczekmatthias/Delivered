@@ -1,0 +1,49 @@
+{% extends "app/_nav.html.twig" %}
+
+{% block addon %}
+	Chats
+{% endblock %}
+
+{% block stylesheets %}
+	{{parent()}}
+	<link rel="stylesheet" href="styles/app/chats.css">
+{% endblock %}
+
+{% block content %}
+	<div class="top-menu">
+		<p class="chats-label">
+			Your chats
+			{% if chats|length > 0 %}
+				({{chats|length}})
+			{% endif %}
+		</p>
+		<a href="" class="create-chat-btn">
+			<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+				<path fill-rule="evenodd" d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H4a.5.5 0 010-1h3.5V4a.5.5 0 01.5-.5z" clip-rule="evenodd"></path>
+				<path fill-rule="evenodd" d="M7.5 8a.5.5 0 01.5-.5h4a.5.5 0 010 1H8.5V12a.5.5 0 01-1 0V8z" clip-rule="evenodd"></path>
+			</svg>
+			Create new chat
+		</a>
+		<a href="" class="find-chats-btn">
+			<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+				<path fill-rule="evenodd" d="M10.442 10.442a1 1 0 011.415 0l3.85 3.85a1 1 0 01-1.414 1.415l-3.85-3.85a1 1 0 010-1.415z" clip-rule="evenodd"></path>
+				<path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 100-11 5.5 5.5 0 000 11zM13 6.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" clip-rule="evenodd"></path>
+			</svg>
+			Find existing chats
+		</a>
+	</div>
+	<div class="your-chats">
+		{% for chat in chats %}
+			<div {% if chat.getAmountOfUnseenMessages > 0 %} class="chat-box unseen-messages" {% else %} class="chat-box" {% endif %}>
+				<img src="{{chat.image}}" alt="" class="chat-img">
+				<p class="chat-name">{{chat.getCustomName}}</p>
+				<p class="last-message">{{chat.getLatestMessage}}</p>
+				{% if chat.getAmountOfUnseenMessages > 0 %}
+					<p class="unseen-amount">{{chat.getAmountOfUnseenMessages}}</p>
+				{% endif %}
+			</div>
+		{% else %}
+			<p class="no-chats">You are not in any chat</p>
+		{% endfor %}
+	</div>
+{% endblock %}

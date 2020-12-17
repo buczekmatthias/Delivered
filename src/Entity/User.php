@@ -76,9 +76,9 @@ class User implements UserInterface
     private $receivedInvitations;
 
     /**
-     * @ORM\Column(type="string", length=500, nullable=true)
+     * @ORM\Column(type="string", length=1000, nullable=true)
      */
-    private $image = "/images/users/avatar.png";
+    private $image;
 
     /**
      * @ORM\OneToMany(targetEntity=Requests::class, mappedBy="byWho")
@@ -318,7 +318,7 @@ class User implements UserInterface
         return $this->image;
     }
 
-    public function setImage(?string $image): self
+    public function setImage(?string $image = "/images/users/avatar.png"): self
     {
         $this->image = $image;
 

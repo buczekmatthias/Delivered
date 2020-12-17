@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\MessagesRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -39,6 +41,16 @@ class Messages
      */
     private $sendAt;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=User::class)
+     */
+    private $seen;
+
+    public function __construct()
+    {
+        $this->seen = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -49,7 +61,7 @@ class Messages
         return $this->content;
     }
 
-    public function setContent(array $content): self
+    public function setContent(array $content = ["text" => "", "links" => [], "files" => []]): self
     {
         $this->content = $content;
 
@@ -88,6 +100,30 @@ class Messages
     public function setSendAt(\DateTimeInterface $sendAt): self
     {
         $this->sendAt = $sendAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|User[]
+     */
+    public function getSeen(): Collection
+    {
+        return $this->seen;
+    }
+
+    public function addSeen(User $seen): self
+    {
+        if (!$this->seen->contains($seen)) {
+            $this->seen[] = $seen;
+        }
+
+        return $this;
+    }
+
+    public function removeSeen(User $seen): self
+    {
+        $this->seen->removeElement($seen);
 
         return $this;
     }
