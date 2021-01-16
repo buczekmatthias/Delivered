@@ -37,12 +37,7 @@ class Invitations
     /**
      * @ORM\Column(type="boolean")
      */
-    private $status;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $seen;
+    private $seen = false;
 
     public function getId(): ?int
     {
@@ -81,18 +76,6 @@ class Invitations
     public function setRequestedAt(\DateTimeInterface $requestedAt): self
     {
         $this->requestedAt = $requestedAt;
-
-        return $this;
-    }
-
-    public function getStatus(): ?bool
-    {
-        return $this->status;
-    }
-
-    public function setStatus(bool $status): self
-    {
-        $this->status = $status;
 
         return $this;
     }

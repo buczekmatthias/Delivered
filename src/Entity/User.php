@@ -61,9 +61,9 @@ class User implements UserInterface
     private $joinedAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\Column(type="array", nullable=true)
      */
-    private $friends;
+    private $friends = [];
 
     /**
      * @ORM\OneToMany(targetEntity=Invitations::class, mappedBy="sender")
@@ -78,7 +78,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=1000, nullable=true)
      */
-    private $image;
+    private $image = "/images/users/avatar.png";
 
     /**
      * @ORM\OneToMany(targetEntity=Requests::class, mappedBy="byWho")
@@ -241,12 +241,12 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getFriends(): ?User
+    public function getFriends(): ?array
     {
         return $this->friends;
     }
 
-    public function setFriends(?User $friends): self
+    public function setFriends(?array $friends): self
     {
         $this->friends = $friends;
 
@@ -318,7 +318,7 @@ class User implements UserInterface
         return $this->image;
     }
 
-    public function setImage(?string $image = "/images/users/avatar.png"): self
+    public function setImage(?string $image): self
     {
         $this->image = $image;
 

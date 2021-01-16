@@ -61,7 +61,7 @@ class Messages
         return $this->content;
     }
 
-    public function setContent(array $content = ["text" => "", "links" => [], "files" => []]): self
+    public function setContent(array $content): self
     {
         $this->content = $content;
 

@@ -1,0 +1,64 @@
+{% extends "app/_nav.html.twig" %}
+
+{% block addon %}
+	Create chat
+{% endblock %}
+
+{% block stylesheets %}
+	{{parent()}}
+	<link rel="stylesheet" href="/styles/app/chats/new.css">
+{% endblock %}
+
+{% block content %}
+	<a href="{{path('chats')}}" class="back-links">
+		<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+			<path fill-rule="evenodd" d="M10 12.796L4.519 8 10 3.204v9.592zm-.659.753l-5.48-4.796a1 1 0 010-1.506l5.48-4.796A1 1 0 0111 3.204v9.592a1 1 0 01-1.659.753z" clip-rule="evenodd"></path>
+		</svg>
+		Back to list of chats
+	</a>
+	{{form_start(form, {'enctype': 'multipart/form-data'})}}
+	<div class="form-box">
+		{{form_label(form.members)}}
+		<span class="amount-counter">
+			0 users
+		</span>
+		<div class="new-members-box">
+			<div class="new-members-list">
+				<div class="top-of-list">
+					<p class="amount">0 chosen</p>
+					<p class="actions">
+						<span class="close">Close</span>
+						<span class="save">Save</span>
+					</p>
+				</div>
+				<div class="users">
+					{% for user in form.members.children %}
+						<div class="user-box">
+							<input type="checkbox" name="{{user.vars.full_name}}" id="{{user.vars.id}}" value="{{user.vars.value}}">
+							<label for="{{user.vars.id}}">{{user.vars.label|raw}}</label>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="form-box">
+		{{form_label(form.name)}}
+		{{form_widget(form.name)}}
+	</div>
+	<div class="form-box">
+		{{form_label(form.image)}}
+		{{form_widget(form.image)}}
+		{% if form.image.vars.errors is not empty %}
+			<p class="error-form">{{form.image.vars.errors.0.message}}</p>
+		{% endif %}
+	</div>
+	{{form_widget(form.submit)}}
+	{{form_widget(form._token)}}
+	{{form_end(form, {'render_rest': false})}}
+{% endblock %}
+
+{% block javascripts %}
+	{{parent()}}
+	<script src="/js/newChat.js"></script>
+{% endblock %}

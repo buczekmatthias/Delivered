@@ -44,3 +44,91 @@
   font-size: 2rem;
   color: #c31432;
 }
+
+.firends-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.friend-box {
+  display: flex;
+  flex-wrap: wrap;
+  width: 48%;
+  box-shadow: 0 4px 16px #c3143136;
+  border-radius: 16px;
+  padding: 1rem 1.35rem;
+  margin-top: 1rem;
+}
+.friend-box:nth-of-type(even) {
+  margin-left: auto;
+}
+.friend-box-top {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  width: 100%;
+}
+.profile-pic {
+  height: 5.5rem;
+  border-radius: 8px;
+}
+.friend-name-city {
+  margin-left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.friend-name {
+  font-size: 1.65rem;
+  margin-bottom: 0.35rem;
+}
+.friend-city {
+  color: rgb(91, 91, 91);
+}
+.friend-remove {
+  margin-left: auto;
+  cursor: pointer;
+  padding: 0.6rem;
+  border: 3px solid #c31432;
+  border-radius: 8px;
+}
+.friend-remove:hover {
+  background-color: #c31432;
+}
+.friend-remove:hover svg {
+  fill: #fff;
+}
+.friend-remove svg {
+  fill: #c31432;
+  transform: scale(1.35);
+}
+
+.friend-birthday,
+.friend-last-active {
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-box > p .label {
+  font-size: 0.9rem;
+  color: rgb(91, 91, 91);
+  margin-bottom: 0.35rem;
+}
+
+.friend-last-active {
+  margin: 0 1.35rem;
+}
+
+.chat-open {
+  margin-left: auto;
+  height: 3.15rem;
+  background-color: #234;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+  background: #c31432;
+  background: -webkit-linear-gradient(to bottom right, #240b36, #c31432);
+  background: linear-gradient(to bottom right, #240b36, #c31432);
+}

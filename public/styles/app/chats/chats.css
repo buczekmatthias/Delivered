@@ -1,5 +1,5 @@
 .app-content {
-  padding: 1.35rem 1.5rem;
+  padding: 1.35rem 2.5rem;
   display: flex;
   flex-direction: column;
 }
@@ -61,4 +61,48 @@
 .no-chats {
   margin-top: 0.75rem;
   font-size: 2.5rem;
+}
+
+.your-chats {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-box {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(91, 91, 91, 0.422);
+  border-radius: 16px;
+  transition: transform 0.3s ease-in-out;
+}
+.chat-box:hover {
+  transform: scale(1.015);
+}
+.chat-img {
+  border-radius: 16px;
+  margin-right: 0.75rem;
+  height: 5rem;
+}
+.chat-name-last-message {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 75%;
+  width: 75%;
+}
+.chat-name {
+  font-size: 1.5rem;
+  color: #000;
+}
+.last-message {
+  font-size: 0.85rem;
+  color: rgb(91, 91, 91);
+}
+.last-message-date {
+  font-size: 0.85rem;
+  color: rgb(91, 91, 91);
+  margin-left: auto;
 }

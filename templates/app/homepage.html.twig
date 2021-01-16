@@ -17,66 +17,88 @@
 				({{chats|length}})
 			{% endif %}
 		</p>
-		{% if chats %}
-
-			{% else %}
-				<div class="no-chats">
-					<p class="no-chat-text">You are not in any chat</p>
-					<a href="" class="no-chat-create">Create your chat</a>
-					<a href="" class="no-chat-join">or join existing one</a>
-				</div>
-		{% endif %}
+		{% for chat in chats %}
+			<a href="{{path('viewChat', {'id': chat.id})}}" {% if chatServices.getAmountOfUnseenMessages(chat.messages, app.user.id) > 0 %} class="chat-box unseen-messages" {% else %} class="chat-box" {% endif %}>
+				<img src="{{chat.image}}" alt="" class="chat-img">
+				<p class="chat-name-last-message">
+					<span class="chat-name">{{chatServices.getCustomName(chat.name, chat.members, app.user.id)}}</span>
+					<span class="last-message">{{chatServices.getLatestMessage(chat.messages)}}</span>
+				</p>
+				{% if chatServices.getAmountOfUnseenMessages(chat.messages, app.user.id) > 0 %}
+					<p class="unseen-amount">{{chatServices.getAmountOfUnseenMessages(chat.messages, app.user.id)}}</p>
+				{% endif %}
+				{% if chatServices.getLatestMessage(chat.messages) != "Nothing has been written so far." %}
+					{% set lastDate = chatServices.getLatestMessageDate(chat.messages) %}
+					<p class="last-message-date">
+						{% if "now"|date("d-m") == lastDate|date("d-m") %}
+							{{lastDate|date("H:i")}}
+						{% else %}
+							{{lastDate|date("d-m")}}
+						{% endif %}
+					</p>
+				{% endif %}
+			</a>
+		{% else %}
+			<div class="no-chats">
+				<p class="no-chat-text">You are not in any chat</p>
+				<a href="" class="no-chat-create">Create your chat</a>
+				<a href="" class="no-chat-join">or join existing one</a>
+			</div>
+		{% endfor %}
 	</div>
 	<div class="right-side-home">
+		{% set newNotifications = false %}
+		{% set newInvitations = false %}
+
+		{% for intivation in app.user.receivedInvitations %}
+			{% if intivation.seen == false and newInvitations == false %}
+				{% set newInvitations = true %}
+			{% endif %}
+		{% endfor %}
+
+		{% for notification in app.user.notifications %}
+			{% if notification.seen == false and newNotifications == false %}
+				{% set newNotifications = true %}
+			{% endif %}
+		{% endfor %}
+
 		<p class="hello-user">
 			Hello
 			{{app.user.name.first}}!
 		</p>
 		<div class="invitations">
-			<div class="invitations-btn">
+			<div {% if newInvitations %} class="invitations-btn new" {% else %} class="invitations-btn" {% endif %}>
 				<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
 					<path fill-rule="evenodd" d="M11 14s1 0 1-1-1-4-6-4-6 3-6 4 1 1 1 1h10zm-9.995-.944v-.002.002zM1.022 13h9.956a.274.274 0 00.014-.002l.008-.002c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664a1.05 1.05 0 00.022.004zm9.974.056v-.002.002zM6 7a2 2 0 100-4 2 2 0 000 4zm3-2a3 3 0 11-6 0 3 3 0 016 0zm4.5 0a.5.5 0 01.5.5v2a.5.5 0 01-.5.5h-2a.5.5 0 010-1H13V5.5a.5.5 0 01.5-.5z" clip-rule="evenodd"></path>
 					<path fill-rule="evenodd" d="M13 7.5a.5.5 0 01.5-.5h2a.5.5 0 010 1H14v1.5a.5.5 0 01-1 0v-2z" clip-rule="evenodd"></path>
 				</svg>
 			</div>
 			<div class="invitations-list">
-				<div class="invitations-menu">
-					<span class="view-menu">Received</span>
-					<span>Sent</span>
-				</div>
-				<div class="received-invitations view-list">
-					{% for inv in app.user.receivedInvitations %}
-						<div {% if inv.isNew %} class="invitation-box no-seen" {% else %} class="invitation-box" {% endif %}>
-							<div class="invitation-sender">
-								<img src="{{inv.sender.image}}" alt="Profile pic">
-								<p class="sender-name">{{inv.sender.getFullName}}</p>
-								<div class="inv-actions">
-									<span class="inv-accept">Accept</span>
-									<span class="inv-refuse">Delete</span>
-								</div>
+				{% for inv in app.user.receivedInvitations %}
+					<div {% if inv.isNew %} class="invitation-box no-seen" {% else %} class="invitation-box" {% endif %}>
+						<div class="invitation-sender">
+							<img src="{{inv.sender.image}}" alt="Profile pic" height="200">
+							<p class="sender-name-city">
+								<span class="sender-name">
+									{{inv.sender.getFullName}}
+								</span>
+								<span class="sender-city">
+									{{inv.sender.city}}
+								</span>
+							</p>
+							<div class="inv-actions" data-invitation-id="{{inv.id}}">
+								<span class="inv-accept">Accept</span>
+								<span class="inv-refuse">Delete</span>
 							</div>
 						</div>
-					{% else %}
-						<p class="no-rec-inv">No one wants to join your friend list</p>
-					{% endfor %}
-				</div>
-				<div class="sent-invitations">
-					{% for inv in app.user.sentInvitation %}
-						<div class="invitation-box">
-							<div class="invitation-receiver">
-								<img src="{{inv.toWho.image}}" alt="Profile pic">
-								<p class="receiver-name">{{inv.toWho.getFullName}}</p>
-								<span class="inv-cancel">Cancel</span>
-							</div>
-						</div>
-					{% else %}
-						<p class="no-sent-inv">You didn't send any friends requests</p>
-					{% endfor %}
-				</div>
+					</div>
+				{% else %}
+					<p class="no-rec-inv">No one wants to join your friend list</p>
+				{% endfor %}
 			</div>
 		</div>
 		<div class="notifications">
-			<div class="notifications-btn">
+			<div {% if newNotifications %} class="notifications-btn new" {% else %} class="notifications-btn" {% endif %}>
 				<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
 					<path d="M8 16a2 2 0 002-2H6a2 2 0 002 2z"></path>
 					<path fill-rule="evenodd" d="M8 1.918l-.797.161A4.002 4.002 0 004 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 00-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 111.99 0A5.002 5.002 0 0113 6c0 .88.32 4.2 1.22 6z" clip-rule="evenodd"></path>
@@ -84,9 +106,15 @@
 			</div>
 			<div class="notifications-list">
 				{% for noti in app.user.notifications %}
-					<div class="notification">
-						<p class="content">{{noti.content|raw}}</p>
-						<p class="date">{{noti.receivedAt|date("d-m-Y H:i")}}</p>
+					<div {% if noti.isNew %} class="notification no-seen" {% else %} class="notification" {% endif %}>
+						<div class="content">{{noti.content|raw}}</div>
+						<p class="date">
+							{% if noti.receivedAt|date("d-m-Y") == "now"|date("d-m-Y") %}
+								{{noti.receivedAt|date("H:i")}}
+							{% else %}
+								{{noti.receivedAt|date("d-m")}}
+							{% endif %}
+						</p>
 					</div>
 				{% else %}
 					<p class="no-notif">You have no notifications</p>
@@ -96,8 +124,8 @@
 		<div class="active-friends">
 			<p class="active-label">
 				Your active friends
-				{% if app.user.friends|length > 0 %}
-					({{app.user.friends|length}})
+				{% if activeFriends|length > 0 %}
+					({{activeFriends|length}})
 				{% endif %}
 			</p>
 			{% if app.user.friends|length < 1 %}
@@ -106,19 +134,14 @@
 					<a href="">Go and find them</a>
 				</p>
 			{% else %}
-				{% set active = 0 %}
-				{% for friend in random(app.user.friends)|slice(0,5) %}
-					{% if friend.isActive %}
-						<div class="active-friend">
-							<img src="{{friend.image}}" alt="Profile pic">
-							<p class="friend-name">{{friend.getFullName}}</p>
-						</div>
-						{% set active = active + 1 %}
-					{% endif %}
-				{% endfor %}
-				{% if loop.last and active == 0 %}
+				{% for friend in activeFriends|slice(0,5) %}
+					<div class="active-friend">
+						<img src="{{friend.image}}" alt="Profile pic" height="250">
+						<p class="friend-name">{{friend.getFullName}}</p>
+					</div>
+				{% else %}
 					<p class="no-active">Non of your friends is active</p>
-				{% endif %}
+				{% endfor %}
 			{% endif %}
 		</div>
 		<div class="free-to-add">
@@ -142,5 +165,6 @@
 {% endblock %}
 
 {% block javascripts %}
+	{{parent()}}
 	<script src="/js/home.js"></script>
 {% endblock %}

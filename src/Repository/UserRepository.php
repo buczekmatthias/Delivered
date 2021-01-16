@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\User;
+use App\Services\UserServices;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -17,9 +18,12 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    public function __construct(ManagerRegistry $registry)
+    private $userServices;
+
+    public function __construct(ManagerRegistry $registry, UserServices $userServices)
     {
         parent::__construct($registry, User::class);
+        $this->userServices = $userServices;
     }
 
     /**
@@ -36,26 +40,24 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
-    public function getUnfriendedUsers(string $current, array $friends)
+    public function getUnfriendedUsers(object $current)
     {
-        $freeToAdd = [];
-
         $all = $this->createQueryBuilder('u')
             ->andWhere('u.login != :current')
-            ->setParameter(":current", $current)
+            ->setParameter(":current", $current->getLogin())
             ->getQuery()
             ->getResult();
 
+        $freeToAdd = [];
+
+        $friendsIds = $this->userServices->getFriendsIds($current);
+
+        $invitationsIds = $this->userServices->getUsersFromInvitations($current, "ids");
+
         foreach ($all as $user) {
-            if (!in_array($user->getLogin(), $friends)) {
+            if (!in_array($user->getId(), $friendsIds) && !in_array($user->getId(), $invitationsIds)) {
                 $freeToAdd[] = $user;
-
-                if (sizeof($freeToAdd) === 5) {
-                    break;
-                }
-
             }
-
         }
 
         return $freeToAdd;

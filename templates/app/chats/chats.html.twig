@@ -6,7 +6,7 @@
 
 {% block stylesheets %}
 	{{parent()}}
-	<link rel="stylesheet" href="styles/app/chats.css">
+	<link rel="stylesheet" href="styles/app/chats/chats.css">
 {% endblock %}
 
 {% block content %}
@@ -17,7 +17,7 @@
 				({{chats|length}})
 			{% endif %}
 		</p>
-		<a href="" class="create-chat-btn">
+		<a href="{{path('newChat')}}" class="create-chat-btn">
 			<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 16 16" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
 				<path fill-rule="evenodd" d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H4a.5.5 0 010-1h3.5V4a.5.5 0 01.5-.5z" clip-rule="evenodd"></path>
 				<path fill-rule="evenodd" d="M7.5 8a.5.5 0 01.5-.5h4a.5.5 0 010 1H8.5V12a.5.5 0 01-1 0V8z" clip-rule="evenodd"></path>
@@ -34,14 +34,26 @@
 	</div>
 	<div class="your-chats">
 		{% for chat in chats %}
-			<div {% if chat.getAmountOfUnseenMessages > 0 %} class="chat-box unseen-messages" {% else %} class="chat-box" {% endif %}>
+			<a href="{{path('viewChat', {'id': chat.id})}}" {% if chatServices.getAmountOfUnseenMessages(chat.messages, app.user.id) > 0 %} class="chat-box unseen-messages" {% else %} class="chat-box" {% endif %}>
 				<img src="{{chat.image}}" alt="" class="chat-img">
-				<p class="chat-name">{{chat.getCustomName}}</p>
-				<p class="last-message">{{chat.getLatestMessage}}</p>
-				{% if chat.getAmountOfUnseenMessages > 0 %}
-					<p class="unseen-amount">{{chat.getAmountOfUnseenMessages}}</p>
+				<p class="chat-name-last-message">
+					<span class="chat-name">{{chatServices.getCustomName(chat.name, chat.members, app.user.id)}}</span>
+					<span class="last-message">{{chatServices.getLatestMessage(chat.messages)}}</span>
+				</p>
+				{% if chatServices.getAmountOfUnseenMessages(chat.messages, app.user.id) > 0 %}
+					<p class="unseen-amount">{{chatServices.getAmountOfUnseenMessages(chat.messages, app.user.id)}}</p>
 				{% endif %}
-			</div>
+				{% if chatServices.getLatestMessage(chat.messages) != "Nothing has been written so far." %}
+					{% set lastDate = chatServices.getLatestMessageDate(chat.messages) %}
+					<p class="last-message-date">
+						{% if "now"|date("d-m") == lastDate|date("d-m") %}
+							{{lastDate|date("H:i")}}
+						{% else %}
+							{{lastDate|date("d-m")}}
+						{% endif %}
+					</p>
+				{% endif %}
+			</a>
 		{% else %}
 			<p class="no-chats">You are not in any chat</p>
 		{% endfor %}

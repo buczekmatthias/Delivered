@@ -36,7 +36,7 @@ class Notifications
     /**
      * @ORM\Column(type="boolean")
      */
-    private $seen;
+    private $seen = false;
 
     public function getId(): ?int
     {
@@ -89,5 +89,10 @@ class Notifications
         $this->seen = $seen;
 
         return $this;
+    }
+
+    public function isNew(): ?bool
+    {
+        return !$this->seen;
     }
 }
