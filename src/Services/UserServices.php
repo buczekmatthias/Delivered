@@ -7,25 +7,12 @@ use App\Interfaces\UserServicesInterface;
 
 class UserServices implements UserServicesInterface
 {
-    public function getFriends(object $current): ?array
-    {
-        $friends = [];
-
-        if ($current instanceof User && $current->getFriends()) {
-            foreach ($current->getFriends() as $friend) {
-                $friends[] = $friend;
-            }
-        }
-
-        return empty($friends) ? null : $friends;
-    }
-
-    public function getFriendsIds(object $current): ?array
+    public function getFriendsIds(object $current): array
     {
         $friendsIds = [];
 
-        if ($current instanceof User && $this->getFriends($current)) {
-            foreach ($this->getFriends($current) as $friend) {
+        if ($current instanceof User && $current->getFriends()) {
+            foreach ($current->getFriends() as $friend) {
                 $friendsIds[] = $friend->getId();
             }
         }
@@ -35,7 +22,7 @@ class UserServices implements UserServicesInterface
 
     public function getActiveFriends(object $current): ?array
     {
-        $friends = $this->getFriends($current);
+        $friends = $current->getFriends();
 
         if (!$friends) {
             return null;
@@ -44,7 +31,7 @@ class UserServices implements UserServicesInterface
         $activeFriends = [];
 
         foreach ($friends as $friend) {
-            if ($friend->isActive() && !$this->isUserInList($current, $activeFriends)) {
+            if ($friend->isActive()) {
                 $activeFriends[] = $friend;
             }
         }
@@ -95,7 +82,7 @@ class UserServices implements UserServicesInterface
 
     public function checkIfUserInFriends(object $current, int $userId): bool
     {
-        $friends = $this->getFriends($current);
+        $friends = $current->getFriends();
 
         if ($friends) {
             return false;
@@ -112,7 +99,7 @@ class UserServices implements UserServicesInterface
 
     public function getUsersToAddToChat(object $current, array $members = null): ?array
     {
-        $friends = $this->getFriends($current);
+        $friends = $current->getFriends();
 
         if ($members === null) {
             return $friends;

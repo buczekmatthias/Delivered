@@ -97,14 +97,8 @@ class ApiController extends AbstractController
         $sender = $this->ur->findOneBy(['id' => $invitation->getSender()->getId()]);
         $receiver = $this->ur->findOneBy(['id' => $invitation->getToWho()->getId()]);
 
-        $senderFriends = $sender->getFriends();
-        $senderFriends[] = $receiver;
-
-        $receiverFriends = $receiver->getFriends();
-        $receiverFriends[] = $sender;
-
-        $sender->setFriends($senderFriends);
-        $receiver->setFriends($receiverFriends);
+        $sender->addFriend($receiver);
+        $receiver->addFriend($sender);
 
         $notification = new Notifications;
         $notification->setToWho($sender);
@@ -112,7 +106,6 @@ class ApiController extends AbstractController
         $notification->setReceivedAt(new \DateTime);
 
         $this->em->persist($notification);
-
         $this->em->remove($invitation);
         $this->em->flush();
 

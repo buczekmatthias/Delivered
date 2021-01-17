@@ -27,8 +27,6 @@ class AppController extends AbstractController
      */
     public function homepage(): Response
     {
-        // TODO: Activity listener is not returning anything
-        // ? It seems to work sometimes
         return $this->render('app/homepage.html.twig', [
             'newToAdd' => $this->ur->getUnfriendedUsers($this->getUser()),
             'chats' => $this->cr->getUsersChatsByActivity($this->getUser()),

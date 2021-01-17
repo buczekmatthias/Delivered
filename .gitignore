@@ -1,5 +1,6 @@
 
 ###> symfony/framework-bundle ###
+/public/images/
 /.env
 /.env.local
 /.env.local.php
@@ -7,9 +8,6 @@
 /config/secrets/prod/prod.decrypt.private.php
 /migrations/
 /public/bundles/
-/public/images/chat/
-/public/images/chatFiles/
-/public/images/users/
 /var/
 /vendor/
 ###< symfony/framework-bundle ###

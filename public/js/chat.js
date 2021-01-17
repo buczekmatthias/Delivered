@@ -22,7 +22,9 @@ socket.onmessage = (e) => {
 };
 
 socket.onerror = () => {
-  alert("Something failed. Reload page and try again");
+  alert(
+    "Something failed. Reload page and try again. If this will repeat up to 3 times then you have to wait for service to be back in usage."
+  );
 };
 
 socket.onclose = () => {};

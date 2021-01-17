@@ -134,14 +134,16 @@
 					<a href="">Go and find them</a>
 				</p>
 			{% else %}
-				{% for friend in activeFriends|slice(0,5) %}
-					<div class="active-friend">
-						<img src="{{friend.image}}" alt="Profile pic" height="250">
-						<p class="friend-name">{{friend.getFullName}}</p>
-					</div>
-				{% else %}
-					<p class="no-active">Non of your friends is active</p>
-				{% endfor %}
+				<div class="active-container">
+					{% for friend in activeFriends|slice(0,5) %}
+						<a href="" class="active-friend">
+							<img src="{{friend.image}}" alt="Profile pic" height="250">
+							<p class="friend-name">{{friend.getFullName}}</p>
+						</a>
+					{% else %}
+						<p class="no-active">Non of your friends is active</p>
+					{% endfor %}
+				</div>
 			{% endif %}
 		</div>
 		<div class="free-to-add">

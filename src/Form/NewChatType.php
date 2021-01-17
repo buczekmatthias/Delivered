@@ -4,8 +4,8 @@ namespace App\Form;
 
 use App\Entity\User;
 use App\Services\UserServices;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -27,14 +27,12 @@ class NewChatType extends AbstractType
         $usersToAdd = $this->userServices->getUsersToAddToChat($options['currentUser']);
 
         $builder
-            ->add('members', EntityType::class, [
-                'class' => User::class,
+            ->add('members', ChoiceType::class, [
                 'multiple' => true,
                 'expanded' => true,
-                'choice_label' => function () use ($usersToAdd) {
-                    foreach ($usersToAdd as $user) {
-                        return "<img src='{$user->getImage()}'><p>{$user->getFullName()}</p>";
-                    }
+                'choices' => $usersToAdd,
+                'choice_label' => function ($user) {
+                    return "<img src='{$user->getImage()}'><p>{$user->getFullName()}</p>";
                 },
             ])
             ->add('name', TextType::class, [

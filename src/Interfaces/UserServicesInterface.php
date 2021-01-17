@@ -4,9 +4,7 @@ namespace App\Interfaces;
 
 interface UserServicesInterface
 {
-    public function getFriends(object $current): ?array;
-
-    public function getFriendsIds(object $current): ?array;
+    public function getFriendsIds(object $current): array;
 
     public function getActiveFriends(object $current): ?array;
 

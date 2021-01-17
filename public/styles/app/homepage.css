@@ -243,6 +243,25 @@
   height: 40vh;
 }
 
+.active-container {
+  height: 100%;
+  overflow: auto;
+}
+.active-friend {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(91, 91, 91, 0.422);
+  border-radius: 16px;
+  margin: 0.5rem 0;
+}
+.active-friend > img {
+  margin-right: 0.5rem;
+  height: 2rem;
+  border-radius: 8px;
+}
+
 .active-label,
 .add-label {
   font-weight: 600;

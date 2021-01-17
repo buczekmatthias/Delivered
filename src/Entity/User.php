@@ -61,11 +61,6 @@ class User implements UserInterface
     private $joinedAt;
 
     /**
-     * @ORM\Column(type="array", nullable=true)
-     */
-    private $friends = [];
-
-    /**
      * @ORM\OneToMany(targetEntity=Invitations::class, mappedBy="sender")
      */
     private $sentInvitation;
@@ -95,12 +90,18 @@ class User implements UserInterface
      */
     private $notifications;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=User::class)
+     */
+    private $friends;
+
     public function __construct()
     {
         $this->sentInvitation = new ArrayCollection();
         $this->receivedInvitations = new ArrayCollection();
         $this->joinRequests = new ArrayCollection();
         $this->notifications = new ArrayCollection();
+        $this->friends = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -237,18 +238,6 @@ class User implements UserInterface
     public function setJoinedAt(\DateTimeInterface $joinedAt): self
     {
         $this->joinedAt = $joinedAt;
-
-        return $this;
-    }
-
-    public function getFriends(): ?array
-    {
-        return $this->friends;
-    }
-
-    public function setFriends(?array $friends): self
-    {
-        $this->friends = $friends;
 
         return $this;
     }
@@ -397,9 +386,35 @@ class User implements UserInterface
         return $this;
     }
 
+    /**
+     * @return Collection|self[]
+     */
+    public function getFriends(): Collection
+    {
+        return $this->friends;
+    }
+
+    public function addFriend(self $friend): self
+    {
+        if (!$this->friends->contains($friend)) {
+            $this->friends[] = $friend;
+        }
+
+        return $this;
+    }
+
+    public function removeFriend(self $friend): self
+    {
+        $this->friends->removeElement($friend);
+
+        return $this;
+    }
+
     public function isActive()
     {
-        return ($this->getLastActivity() > new \DateTime('5 minutes ago'));
+        $delay = new \DateTime('5 minutes ago');
+
+        return ($this->getLastActivity() > $delay);
     }
 
     public function getFullName(): ?string
