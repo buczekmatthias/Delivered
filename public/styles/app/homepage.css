@@ -223,10 +223,11 @@
 .notification {
   display: flex;
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.5rem;
 }
 .notification .content {
   display: flex;
+  width: 90%;
 }
 .notification .content img {
   height: 4rem;
@@ -234,7 +235,8 @@
   border-radius: 8px;
 }
 .notification .date {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
+  color: rgb(91, 91, 91);
 }
 
 .active-friends,

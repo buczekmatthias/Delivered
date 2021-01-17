@@ -4,14 +4,99 @@ namespace App\Services;
 
 use App\Interfaces\ChatServicesInterface;
 use App\Repository\ChatsRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class ChatServices implements ChatServicesInterface
 {
     private $cr;
+    private $em;
 
-    public function __construct(ChatsRepository $cr)
+    public function __construct(ChatsRepository $cr, EntityManagerInterface $em)
     {
         $this->cr = $cr;
+        $this->em = $em;
+    }
+
+    public function createChat(array $data, object $currentUser, ParameterBagInterface $pb): ?int
+    {
+        if (sizeof($data['members']) < 1) {
+            return null;
+        } else {
+            $chat = new \App\Entity\Chats;
+
+            if (sizeof($data['members']) === 1) {
+                $chat->setMembers(['admins' => [$currentUser, $data['members'][0]], 'members' => []]);
+                $chat->setImage("/images/users/images/{$data['members'][0]->getImage()}");
+            } else {
+                $temp = [];
+                $temp['admins'][] = $currentUser;
+                foreach ($data['members'] as $user) {
+                    $temp['members'][] = $user;
+                }
+
+                $chat->setMembers($temp);
+                $chat->setImage("/images/chats/default.png");
+            }
+
+            $chat->setName($data['name'] ?? "");
+
+            $this->em->persist($chat);
+            $this->em->flush();
+
+            $filesystem = new Filesystem;
+            $filesystem->mkdir("{$pb->get('kernel.project_dir')}/public/images/chats/{$chat->getId()}");
+
+            if ($data['image']) {
+                try {
+                    $new = "chatImage.{$data['image']->guessExtension()}";
+                    $data['image']->move(
+                        "images/chats/{$chat->getId()}",
+                        $new
+                    );
+                } catch (FileException $e) {
+                    throw new Exception("Chat has been created but there was problem with uploading your file. Try again in created chat", 500);
+                }
+
+                $chat->setImage("/images/chats/{$chat->getId()}/chatImage.{$data['image']->guessExtension()}");
+                $this->em->flush();
+            }
+
+            return $chat->getId();
+        }
+
+        return null;
+    }
+
+    public function findChatId(int $id, object $currentUser): int
+    {
+        $chats = $this->cr->getUserChats($currentUser);
+
+        foreach ($chats as $chat) {
+            $members = $chat->getMembers();
+
+            if (sizeof($members['admins']) === 2 && sizeof($members['members']) === 0) {
+                $current = $looked = false;
+                foreach ($members['admins'] as $member) {
+                    if ($member->getId() === $currentUser->getId()) {
+                        $current = true;
+                    }
+
+                    if ($member->getId() === $id) {
+                        $looked = true;
+                    }
+                }
+
+                if ($current && $looked) {
+                    return $chat->getId();
+                }
+            }
+        }
+
+        return 0;
     }
 
     public function getCustomName(string $name, array $members, int $currentId): string
@@ -178,5 +263,19 @@ class ChatServices implements ChatServicesInterface
         }
 
         return 0;
+    }
+
+    public function getChatAmountOfFiles(int $chatId): int
+    {
+        $amount = 0;
+        $chat = $this->cr->findOneBy(['id' => $chatId]);
+
+        foreach ($chat->getMessages() as $message) {
+            if (sizeof($message->getContent()['files']) > 0) {
+                $amount += sizeof($message->getContent()['files']);
+            }
+        }
+
+        return $amount;
     }
 }

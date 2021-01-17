@@ -137,42 +137,9 @@ class ApiController extends AbstractController
     public function removeFriend(Request $request): Response
     {
         (int) $friendId = $request->request->get("friendId");
-
-        $friends = $this->userServices->getFriends($this->getUser());
-
-        if (empty($friends)) {
-            return new Response("You have no friends on your list", 500);
-        }
-
         $friend = $this->ur->findOneBy(['id' => $friendId]);
 
-        if (!$friend) {
-            return new Response("No user is matching", 404);
-        }
-
-        $userFriends = $friend->getFriends();
-
-        if (empty($userFriends)) {
-            return new Response("This user have no friends", 500);
-        }
-
-        $user = $this->ur->findOneBy(['id' => $this->getUser()->getId()]);
-
-        foreach ($friends as $index => $value) {
-            if ($value->getId() == $friendId) {
-                array_splice($friends, $index, 1);
-            }
-        }
-
-        $user->setFriends($friends);
-
-        foreach ($userFriends as $index => $value) {
-            if ($value->getId() === $this->getUser()->getId()) {
-                array_splice($userFriends, $index, 1);
-            }
-        }
-
-        $friend->setFriends($userFriends);
+        $this->getUser()->removeFriend($friend);
 
         $this->em->flush();
 

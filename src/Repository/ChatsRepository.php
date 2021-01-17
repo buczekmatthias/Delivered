@@ -30,6 +30,15 @@ class ChatsRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function getUserChats(object $current)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere("c.members LIKE :current")
+            ->setParameter(":current", "%" . serialize($current) . "%")
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return Chats[] Returns an array of Chats objects
     //  */

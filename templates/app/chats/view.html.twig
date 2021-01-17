@@ -61,7 +61,7 @@
 		</div>
 		<div class="chat-files">
 			<p class="subsection-label">Files</p>
-			<p class="subsection-value">{{chat.files|length}}</p>
+			<p class="subsection-value">{{chatServices.getChatAmountOfFiles(chat.id)}}</p>
 		</div>
 		{% set isChatAdmin = false %}
 		{% for user in chat.members.admins %}

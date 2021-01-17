@@ -136,7 +136,7 @@
 			{% else %}
 				<div class="active-container">
 					{% for friend in activeFriends|slice(0,5) %}
-						<a href="" class="active-friend">
+						<a href="{{path('openChat', {'id': friend.id})}}" class="active-friend">
 							<img src="{{friend.image}}" alt="Profile pic" height="250">
 							<p class="friend-name">{{friend.getFullName}}</p>
 						</a>

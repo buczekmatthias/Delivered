@@ -2,6 +2,7 @@ const socket = new WebSocket("ws://localhost:8001"),
   currentId = parseInt(window.localStorage.getItem("currentId")),
   currentName = window.localStorage.getItem("currentName"),
   currentImage = window.localStorage.getItem("currentImage"),
+  chatFiles = document.getElementsByClassName("chat-files")[0].children[1],
   messagesContainer = document.getElementsByClassName("messages-container")[0],
   messageInput = document.getElementsByClassName("message-content")[0],
   linksIcon = document.getElementsByClassName("links-icon")[0],
@@ -144,6 +145,11 @@ function displayMessages(messages) {
 }
 
 function appendMessage(data) {
+  if (data.content.files.length > 0) {
+    chatFiles.innerHTML =
+      parseInt(chatFiles.innerHTML) + parseInt(data.content.files.length);
+  }
+
   let messageCont = document.createElement("div");
   messageCont.classList.add("message-container");
   messageCont.classList.add(data.sender.id === currentId ? "sent" : "received");

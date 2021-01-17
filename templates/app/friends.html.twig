@@ -54,7 +54,7 @@
 					<span class="label">Last active</span>
 					<span class="value">{{friend.lastActivity|date("d-m-Y H:i")}}</span>
 				</p>
-				<a href="" class="chat-open">
+				<a href="{{path('openChat', {'id': friend.id})}}" class="chat-open">
 					Open chat with
 					{{friend.name.first}}
 				</a>
