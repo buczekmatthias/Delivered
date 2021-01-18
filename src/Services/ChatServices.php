@@ -278,4 +278,21 @@ class ChatServices implements ChatServicesInterface
 
         return $amount;
     }
+
+    public function getChatFiles(object $messages): array
+    {
+        $files = [];
+
+        if (sizeof($messages) > 0) {
+            foreach ($messages as $message) {
+                if (sizeof($message->getContent()['files']) > 0) {
+                    foreach ($message->getContent()['files'] as $file) {
+                        $files[] = $file;
+                    }
+                }
+            }
+        }
+
+        return $files;
+    }
 }

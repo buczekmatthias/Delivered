@@ -206,7 +206,7 @@ function clickableFilesView() {
           `/images/chats/${window.location.pathname.split("/").pop()}/${file}`
         );
         fl.setAttribute("download", "");
-        fl.innerHTML += `${fileSvg}`;
+        fl.innerHTML += `${fileSvg}<span>${file}</span>`;
 
         filesCont.appendChild(fl);
       });
@@ -222,4 +222,74 @@ function clickableFilesView() {
       messagesContainer.insertBefore(filesCont, messagesContainer.children[0]);
     };
   });
+}
+
+chatFiles.onclick = () => {
+  if (parseInt(chatFiles.innerHTML) > 0) {
+    getChatFiles();
+  }
+};
+
+function getChatFiles() {
+  initLoader();
+  let xhr = new XMLHttpRequest();
+  xhr.open(
+    "GET",
+    `/api/files/get/${parseInt(window.location.pathname.split("/").pop())}`
+  );
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        listChatFiles(JSON.parse(xhr.responseText));
+      } else {
+        alert("Something went wrong during app preparation. Refresh the page");
+      }
+    }
+  };
+  xhr.send();
+}
+
+function initLoader() {
+  let box = document.createElement("div");
+  box.classList.add("chat-loader-box");
+
+  box.innerHTML = `<svg class="rotate" stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">${rotate}</svg>`;
+
+  document.getElementsByClassName("side-chat-container")[0].appendChild(box);
+}
+
+function listChatFiles(files) {
+  let filesBox = document.createElement("div");
+  filesBox.classList.add("chat-files-box");
+
+  let close = document.createElement("span");
+  close.classList.add("close-pop-link");
+  close.innerHTML = `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M563.8 512l262.5-312.9c4.4-5.2.7-13.1-6.1-13.1h-79.8c-4.7 0-9.2 2.1-12.3 5.7L511.6 449.8 295.1 191.7c-3-3.6-7.5-5.7-12.3-5.7H203c-6.8 0-10.5 7.9-6.1 13.1L459.4 512 196.9 824.9A7.95 7.95 0 0 0 203 838h79.8c4.7 0 9.2-2.1 12.3-5.7l216.5-258.1 216.5 258.1c3 3.6 7.5 5.7 12.3 5.7h79.8c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"></path></svg>`;
+
+  filesBox.appendChild(close);
+
+  close.onclick = () => {
+    document
+      .getElementsByClassName("side-chat-container")[0]
+      .removeChild(filesBox);
+  };
+
+  Array.from(files).forEach((file) => {
+    let fileItem = document.createElement("a");
+    fileItem.setAttribute(
+      "href",
+      `/images/chats/${window.location.pathname.split("/").pop()}/${file}`
+    );
+    fileItem.setAttribute("download", "");
+    fileItem.innerHTML = `${fileSvg}<span class="file-name">${file}</span>`;
+
+    filesBox.appendChild(fileItem);
+  });
+
+  document
+    .getElementsByClassName("side-chat-container")[0]
+    .appendChild(filesBox);
+  document
+    .getElementsByClassName("side-chat-container")[0]
+    .removeChild(document.getElementsByClassName("chat-loader-box")[0]);
 }

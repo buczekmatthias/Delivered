@@ -260,6 +260,16 @@ class ApiController extends AbstractController
     }
 
     /**
+     * @Route("/api/files/get/{id}", methods={"GET"}, requirements={"id"="\d+"})
+     */
+    public function getChatFiles(int $id): Response
+    {
+        $chat = $this->cr->findOneBy(['id' => $id]);
+
+        return $this->json($this->chatServices->getChatFiles($chat->getMessages()));
+    }
+
+    /**
      * @Route("/getUserId", methods={"GET"})
      */
     public function getUserId(): Response

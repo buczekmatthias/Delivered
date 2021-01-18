@@ -14,4 +14,5 @@ interface ChatServicesInterface
     public function getAmountOfUnseenMessages(object $messages, int $currentId): int;
     public function getLastFileId(int $chatId): int;
     public function getChatAmountOfFiles(int $chatId): int;
+    public function getChatFiles(object $messages): array;
 }
