@@ -49,6 +49,16 @@ class AppController extends AbstractController
      */
     public function friends(): Response
     {
-        return $this->render('app/friends.html.twig', []);
+        return $this->render('app/friends/view.html.twig', []);
+    }
+
+    /**
+     * @Route("/friends/find", name="findFriends", methods={"GET"})
+     */
+    public function findFriends(): Response
+    {
+        return $this->render('app/friends/find.html.twig', [
+            'toAdd' => $this->ur->getUnfriendedUsers($this->getUser()),
+        ]);
     }
 }

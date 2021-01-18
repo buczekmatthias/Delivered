@@ -1,0 +1,112 @@
+.app-content {
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-label {
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+.find-user-btn {
+  display: flex;
+  align-items: center;
+  padding: 1rem 2rem;
+  font-size: 1.05rem;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+  background: #c31432;
+  background: -webkit-linear-gradient(to bottom right, #240b36, #c31432);
+  background: linear-gradient(to bottom right, #240b36, #c31432);
+}
+.find-user-btn svg {
+  fill: #fff;
+  margin-right: 0.75rem;
+  transform: scale(1.5);
+}
+
+.no-user {
+  font-size: 2rem;
+  color: #c31432;
+  margin: 2rem 0 0.75rem;
+}
+
+.user-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.user-box {
+  display: flex;
+  flex-wrap: wrap;
+  width: 48%;
+  box-shadow: 0 4px 16px #c3143136;
+  border-radius: 16px;
+  padding: 1rem 1.35rem;
+  margin-top: 1rem;
+}
+.user-box:nth-of-type(even) {
+  margin-left: auto;
+}
+.user-box-top {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  width: 100%;
+}
+.profile-pic {
+  height: 5.5rem;
+  border-radius: 8px;
+}
+.user-name-city {
+  margin-left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.user-name {
+  font-size: 1.65rem;
+  margin-bottom: 0.35rem;
+}
+.user-city {
+  color: rgb(91, 91, 91);
+}
+.request-user {
+  border: 1px solid #240b36;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: auto;
+}
+.request-user svg {
+  fill: #240b36;
+}
+
+.requested-box {
+  padding: calc(0.5rem + 2px);
+  border: none;
+  background: #c31432;
+  background: -webkit-linear-gradient(to bottom right, #240b36, #c31432);
+  background: linear-gradient(to bottom right, #240b36, #c31432);
+}
+.requested-box svg {
+  fill: #fff;
+}
+
+.user-birthday,
+.user-last-active {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-box > p .label {
+  font-size: 0.9rem;
+  color: rgb(91, 91, 91);
+  margin-bottom: 0.35rem;
+}
+
+.user-last-active {
+  margin: 0 1.35rem;
+}
