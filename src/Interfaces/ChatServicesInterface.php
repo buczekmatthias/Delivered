@@ -15,4 +15,5 @@ interface ChatServicesInterface
     public function getLastFileId(int $chatId): int;
     public function getChatAmountOfFiles(int $chatId): int;
     public function getChatFiles(object $messages): array;
+    public function getChatMembers(object $chat): array;
 }

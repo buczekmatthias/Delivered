@@ -3,6 +3,7 @@ const socket = new WebSocket("ws://localhost:8001"),
   currentName = window.localStorage.getItem("currentName"),
   currentImage = window.localStorage.getItem("currentImage"),
   chatFiles = document.getElementsByClassName("chat-files")[0].children[1],
+  chatMembers = document.getElementsByClassName("chat-members")[0].children[1],
   messagesContainer = document.getElementsByClassName("messages-container")[0],
   messageInput = document.getElementsByClassName("message-content")[0],
   linksIcon = document.getElementsByClassName("links-icon")[0],
@@ -224,6 +225,15 @@ function clickableFilesView() {
   });
 }
 
+function initLoader() {
+  let box = document.createElement("div");
+  box.classList.add("chat-loader-box");
+
+  box.innerHTML = `<svg class="rotate" stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">${rotate}</svg>`;
+
+  document.getElementsByClassName("side-chat-container")[0].appendChild(box);
+}
+
 chatFiles.onclick = () => {
   if (parseInt(chatFiles.innerHTML) > 0) {
     getChatFiles();
@@ -247,15 +257,6 @@ function getChatFiles() {
     }
   };
   xhr.send();
-}
-
-function initLoader() {
-  let box = document.createElement("div");
-  box.classList.add("chat-loader-box");
-
-  box.innerHTML = `<svg class="rotate" stroke="currentColor" fill="currentColor" stroke-width="0" viewbox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">${rotate}</svg>`;
-
-  document.getElementsByClassName("side-chat-container")[0].appendChild(box);
 }
 
 function listChatFiles(files) {
@@ -289,6 +290,70 @@ function listChatFiles(files) {
   document
     .getElementsByClassName("side-chat-container")[0]
     .appendChild(filesBox);
+  document
+    .getElementsByClassName("side-chat-container")[0]
+    .removeChild(document.getElementsByClassName("chat-loader-box")[0]);
+}
+
+chatMembers.onclick = () => {
+  if (parseInt(chatMembers.innerHTML) >= 2) {
+    getChatMembers();
+  }
+};
+
+function getChatMembers() {
+  initLoader();
+
+  let xhr = new XMLHttpRequest();
+  xhr.open(
+    "GET",
+    `/api/members/get/${parseInt(window.location.pathname.split("/").pop())}`
+  );
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        listChatMembers(JSON.parse(xhr.responseText));
+      } else {
+        alert("Something went wrong during app preparation. Refresh the page");
+      }
+    }
+  };
+  xhr.send();
+}
+
+function listChatMembers(members) {
+  let membersBox = document.createElement("div");
+  membersBox.classList.add("chat-members-box");
+
+  let close = document.createElement("span");
+  close.classList.add("close-pop-link");
+  close.innerHTML = `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M563.8 512l262.5-312.9c4.4-5.2.7-13.1-6.1-13.1h-79.8c-4.7 0-9.2 2.1-12.3 5.7L511.6 449.8 295.1 191.7c-3-3.6-7.5-5.7-12.3-5.7H203c-6.8 0-10.5 7.9-6.1 13.1L459.4 512 196.9 824.9A7.95 7.95 0 0 0 203 838h79.8c4.7 0 9.2-2.1 12.3-5.7l216.5-258.1 216.5 258.1c3 3.6 7.5 5.7 12.3 5.7h79.8c6.8 0 10.5-7.9 6.1-13.1L563.8 512z"></path></svg>`;
+
+  membersBox.appendChild(close);
+
+  close.onclick = () => {
+    document
+      .getElementsByClassName("side-chat-container")[0]
+      .removeChild(membersBox);
+  };
+  for (let [group, membs] of Object.entries(members)) {
+    let groupName = document.createElement("p");
+    groupName.classList.add("members-group");
+    groupName.innerHTML = group;
+
+    for (let member of membs) {
+      let memberItem = document.createElement("p");
+      memberItem.classList.add("chat-member-box");
+
+      memberItem.innerHTML = `<img src="${member.img}" class="member-image"><span class="member-name">${member.name}</span>`;
+
+      membersBox.appendChild(memberItem);
+    }
+  }
+
+  document
+    .getElementsByClassName("side-chat-container")[0]
+    .appendChild(membersBox);
   document
     .getElementsByClassName("side-chat-container")[0]
     .removeChild(document.getElementsByClassName("chat-loader-box")[0]);

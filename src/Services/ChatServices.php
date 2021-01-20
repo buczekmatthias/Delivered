@@ -295,4 +295,21 @@ class ChatServices implements ChatServicesInterface
 
         return $files;
     }
+
+    public function getChatMembers(object $chat): array
+    {
+        $members = [];
+
+        foreach ($chat->getMembers() as $role => $chatMembers) {
+            foreach ($chatMembers as $member) {
+                $members[$role][] = [
+                    'id' => $member->getId(),
+                    'img' => $member->getImage(),
+                    'name' => $member->getFullName(),
+                ];
+            }
+        }
+
+        return $members;
+    }
 }
